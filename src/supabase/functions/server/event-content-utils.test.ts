@@ -3,12 +3,14 @@ import {
   isEventStatement,
   isEventVote,
   moveVotesToMergeTargets,
+  filterToEventVotes,
   updateVoteCounts,
 } from "./event-content-utils.ts";
 import type {
   EventVote,
   Statement,
   StatementMerge,
+  Vote,
 } from "./types.tsx";
 
 const STATEMENT: Statement = {
@@ -163,3 +165,41 @@ Deno.test(
     ]);
   },
 );
+
+Deno.test(
+  "filterToEventVotes - keeps event votes on the given statements, tagged with their room",
+  () => {
+    const statements = [
+      { ...STATEMENT, id: "first", roomId: "room-a" },
+      { ...STATEMENT, id: "second", roomId: "room-b" },
+    ];
+    const vote = (
+      statementId: string,
+      source: Vote["source"],
+    ): Vote => ({
+      id: `${statementId}-${source}`,
+      statementId,
+      userId: "voter",
+      voteType: "agree",
+      timestamp: 0,
+      source,
+    });
+    const tagged = filterToEventVotes(
+      [
+        vote("first", "event"),
+        vote("second", "event"),
+        vote("second", "feed"),
+        vote("unrelated", "event"),
+      ],
+      statements,
+    );
+    assertEquals(
+      tagged.map(({ statementId, roomId }) => ({ statementId, roomId })),
+      [
+        { statementId: "first", roomId: "room-a" },
+        { statementId: "second", roomId: "room-b" },
+      ],
+    );
+  },
+);
+

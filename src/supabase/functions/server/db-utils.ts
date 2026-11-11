@@ -1,9 +1,12 @@
+import _ from "lodash";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import type { SupabaseClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { Statement } from "./types.tsx";
 import { parseKvDataArray } from "./kv-utils.tsx";
 
 export const TABLE_NAME = "kv_store_f1a393b4";
+export const KV_PAGE_SIZE = 1000;
+export const MAXIMUM_KEY_PREFIXES_PER_QUERY = 50;
 
 export const createClientFromEnv = (): SupabaseClient =>
   createClient(
@@ -297,3 +300,66 @@ export const getAllKvRecordsMatching = async (
 export const getAllKvRecordsWithPrefix = async (
   prefix: string,
 ): Promise<Map<string, any>> => getAllKvRecordsMatching(`${prefix}%`);
+
+interface KeyedRow {
+  key: string;
+}
+
+type KeyedPageQuery<R extends KeyedRow> = (
+  afterKey: string | null,
+  pageSize: number,
+) => PromiseLike<{
+  data: R[] | null;
+  error: { message: string } | null;
+}>;
+
+export const fetchAllPagesAfterKey = async <R extends KeyedRow>(
+  queryPage: KeyedPageQuery<R>,
+  pageSize: number = KV_PAGE_SIZE,
+): Promise<R[]> => {
+  const rows: R[] = [];
+  let afterKey: string | null = null;
+  while (true) {
+    const { data, error } = await queryPage(afterKey, pageSize);
+    if (error) throw new Error(error.message);
+    if (!data || data.length === 0) break;
+    rows.push(...data);
+    if (data.length < pageSize) break;
+    afterKey = data[data.length - 1].key;
+  }
+  return rows;
+};
+
+const getKvValuesMatchingPrefixBatched = async (
+  prefixes: string[],
+): Promise<any[]> => {
+  const supabase = createClientFromEnv();
+  const patterns = prefixes.map((prefix) => `${prefix}%`);
+  const rows = await fetchAllPagesAfterKey<{ key: string; value: any }>(
+    (afterKey, pageSize) => {
+      const query = supabase
+        .from(TABLE_NAME)
+        .select("key, value")
+        .likeAnyOf("key", patterns)
+        .order("key")
+        .limit(pageSize);
+      return afterKey === null ? query : query.gt("key", afterKey);
+    },
+  );
+  return rows.map((row) => row.value);
+};
+
+export const splitKeyPrefixesIntoBatches = (
+  prefixes: string[],
+): string[][] => _.chunk(prefixes, MAXIMUM_KEY_PREFIXES_PER_QUERY);
+
+export const getKvValuesMatchingPrefixes = async (
+  prefixes: string[],
+): Promise<any[]> => {
+  const batchValues = await Promise.all(
+    splitKeyPrefixesIntoBatches(prefixes).map(
+      getKvValuesMatchingPrefixBatched,
+    ),
+  );
+  return batchValues.flat();
+};

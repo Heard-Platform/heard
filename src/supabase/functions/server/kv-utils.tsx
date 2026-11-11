@@ -1,5 +1,10 @@
 // Utility functions for working with KV store data
-import { getAllRecords, getAllKvRecordsMatching, getAllKvRecordsWithPrefix } from "./db-utils.ts";
+import {
+  getAllRecords,
+  getAllKvRecordsMatching,
+  getAllKvRecordsWithPrefix,
+  getKvValuesMatchingPrefixes,
+} from "./db-utils.ts";
 import * as kv from "./kv_store.tsx";
 import type { ClusterIdentityRecord } from "./cluster-identity.ts";
 import type { ClusterRecomputeMarker } from "./cluster-freshness.ts";
@@ -376,10 +381,22 @@ export const getVotesForUser = async (
   return getAllRecords<Vote>(`vote:%:${userId}`);
 };
 
+const voteKeyPrefix = (statementId: string) =>
+  `vote:${statementId}:`;
+
 export const getVotesForStatement = async (
   statementId: string,
 ): Promise<Vote[]> => {
-  return getByPrefixParsed<Vote>(`vote:${statementId}:`);
+  return getByPrefixParsed<Vote>(voteKeyPrefix(statementId));
+};
+
+export const getVotesForStatements = async (
+  statementIds: string[],
+): Promise<Vote[]> => {
+  const voteValues = await getKvValuesMatchingPrefixes(
+    statementIds.map(voteKeyPrefix),
+  );
+  return parseKvDataArray<Vote>(voteValues);
 };
 
 export const saveVote = async (vote: Vote) => {

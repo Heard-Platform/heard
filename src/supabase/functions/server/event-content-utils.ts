@@ -2,7 +2,7 @@ import _ from "lodash";
 import {
   getStatementsForRoom,
   getStatementsForRoomIncludingHidden,
-  getVotesForStatement,
+  getVotesForStatements,
 } from "./kv-utils.tsx";
 import { getMergesForRoom } from "./model-utils.ts";
 import { applyStatementMerges } from "./room-utils.ts";
@@ -63,16 +63,30 @@ export const moveVotesToMergeTargets = (
   );
 };
 
+export const filterToEventVotes = (
+  votes: Vote[],
+  statements: Statement[],
+): EventVote[] => {
+  const roomIdByStatementId = new Map(
+    statements.map((statement) => [statement.id, statement.roomId]),
+  );
+  return votes
+    .filter(isEventVote)
+    .filter((vote) => roomIdByStatementId.has(vote.statementId))
+    .map((vote) => ({
+      ...vote,
+      roomId: roomIdByStatementId.get(vote.statementId)!,
+    }));
+};
+
 const loadEventVotesForStatements = async (
   statements: Statement[],
-): Promise<EventVote[]> =>
-  (await Promise.all(
-    statements.map(async (statement) =>
-      (await getVotesForStatement(statement.id))
-        .filter(isEventVote)
-        .map((vote) => ({ ...vote, roomId: statement.roomId })),
-    ),
-  )).flat();
+): Promise<EventVote[]> => {
+  const votes = await getVotesForStatements(
+    statements.map((statement) => statement.id),
+  );
+  return filterToEventVotes(votes, statements);
+};
 
 interface EventStatementsAndVotes {
   statements: Statement[];
