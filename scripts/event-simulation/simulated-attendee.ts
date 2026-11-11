@@ -232,8 +232,8 @@ export class SimulatedAttendee {
     this.shownPost = null;
     while (!stopSignal.aborted && this.currentRoomId() === roomId) {
       try {
-        const { statements } = await this.api.getPost(roomId);
-        this.showPost(roomId, statements);
+        const { post } = await this.api.getEventPost(roomId);
+        this.showPost(roomId, post.statements);
         break;
       } catch {
         await sleep(POST_LOAD_RETRY_MS, stopSignal);
@@ -338,7 +338,9 @@ export class SimulatedAttendee {
   }
 
   private async refreshShownPost(roomId: string) {
-    const response = await this.api.getPost(roomId).catch(() => null);
-    if (response) this.showPost(roomId, response.statements);
+    const response = await this.api
+      .getEventPost(roomId)
+      .catch(() => null);
+    if (response) this.showPost(roomId, response.post.statements);
   }
 }

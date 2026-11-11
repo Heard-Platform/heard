@@ -4,6 +4,7 @@ import type {
   DemographicQuestion,
   Event,
   EventOnboardingQuestionInput,
+  EventPost,
   EventSummary,
   LiveEventView,
   LiveHeartbeat,
@@ -118,6 +119,14 @@ export class HeardApiClient {
 
   getPost(roomId: string) {
     return this.send<RoomStatusResponse>("GET", "GET /room/:id", `/room/${roomId}`);
+  }
+
+  getEventPost(roomId: string) {
+    return this.send<{ post: EventPost }>(
+      "GET",
+      "GET /event-post/:roomId",
+      `/event-post/${roomId}`,
+    );
   }
 
   voteOnStatement(statementId: string, voteType: VoteType) {
