@@ -42,7 +42,7 @@ export const FEATURE_FLAGS: Record<Environment, FeatureFlagsConfig> = {
   production: {
     ONLY_JOINED_COMMUNITIES: true,
     DEMOGRAPHICS: true,
-    EVENTS: false,
+    EVENTS: true,
     FLYER_SWIPE: true,
     CIVIC_FLYER_RESULTS: true,
     STREAMLINED_CREATION: true,
