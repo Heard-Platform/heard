@@ -33,6 +33,8 @@ import {
   startVoting,
   countEventTotals,
   countEventHeadcount,
+  type EventHeadcount,
+  HEADCOUNT_NOT_REQUESTED,
   toLiveEventView,
 } from "./live-event-utils.ts";
 import type {
@@ -70,8 +72,24 @@ export const getOrCreateEventDisplayKey = async (eventId: number): Promise<strin
 export const getEventRooms = async (eventId: number): Promise<DebateRoom[]> =>
   (await getAllDebates()).filter((room) => room.eventId === eventId);
 
-export const loadEventView = async (eventId: number, state: EventState, now: number): Promise<LiveEventView> =>
-  toLiveEventView(state, countEventHeadcount(await getEventPresences(eventId), state, now));
+const loadEventHeadcount = async (
+  eventId: number,
+  state: EventState,
+  now: number,
+): Promise<EventHeadcount> =>
+  countEventHeadcount(await getEventPresences(eventId), state, now);
+
+export const loadEventView = async (
+  eventId: number,
+  state: EventState,
+  now: number,
+  includesHeadcount: boolean,
+): Promise<LiveEventView> => {
+  const headcount = includesHeadcount
+    ? await loadEventHeadcount(eventId, state, now)
+    : HEADCOUNT_NOT_REQUESTED;
+  return toLiveEventView(state, headcount);
+};
 
 export type EventPostCheck = { allowed: true } | { allowed: false; error: string };
 

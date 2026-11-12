@@ -117,9 +117,6 @@ async function simulateAttendees(
       elapsedMs: now - startedAt,
       joinedCount: run.attendees.filter((attendee) => attendee.hasJoined).length,
       attendeeCount: options.attendeeCount,
-      peopleHere: run.latestEventState?.peopleHere ?? null,
-      answeringQuestions:
-        run.latestEventState?.answeringQuestions ?? null,
       recentRecords: run.records.filter((record) => now - record.finishedAt <= PROGRESS_WINDOW_MS),
     }));
   }, PROGRESS_WINDOW_MS);

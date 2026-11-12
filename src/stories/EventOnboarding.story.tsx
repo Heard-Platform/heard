@@ -117,7 +117,7 @@ function OnboardingDemo({
       </Button>
       <PhoneFrame>
         {isFinished ? (
-          <EventLobby moment="starting" peopleHere={214} />
+          <EventLobby moment="starting" />
         ) : (
           <EventOnboarding
             key={runKey}

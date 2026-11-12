@@ -132,8 +132,6 @@ function WaitingDemo({
   return (
     <EventLobby
       moment="waiting"
-      peopleHere={52}
-      finishedCurrentPost={44}
       statementText={statementText}
       newStatementCount={newStatementCount}
       onStatementTextChange={setStatementText}
@@ -163,7 +161,7 @@ export function EventAttendeeStory() {
           label: "Starting soon",
           children: (
             <PhoneFrame>
-              <EventLobby moment="starting" peopleHere={23} />
+              <EventLobby moment="starting" />
             </PhoneFrame>
           ),
         },

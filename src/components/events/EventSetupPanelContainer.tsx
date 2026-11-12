@@ -20,7 +20,7 @@ export function EventSetupPanelContainer({ event }: { event: Event }) {
 
   useEffect(() => {
     let cancelled = false;
-    api.getLiveEvent(event.id).then((response) => {
+    api.getLiveEvent(event.id, false).then((response) => {
       if (cancelled) return;
       if (response.success && response.data) {
         setLive(response.data.live);
