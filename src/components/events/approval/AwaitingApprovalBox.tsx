@@ -31,7 +31,7 @@ const APPROVAL_SECTION_COUNT_OPTIONS =
 const NO_PINNED_SECTION = "none";
 
 interface AwaitingApprovalBoxProps {
-  awaitingApprovalStatements: SupportViewAttendeeStatement[];
+  attendeeStatements: SupportViewAttendeeStatement[];
   updatingStatementIds: string[];
   now: number;
   onSetStatementHidden: (
@@ -41,7 +41,7 @@ interface AwaitingApprovalBoxProps {
 }
 
 export function AwaitingApprovalBox({
-  awaitingApprovalStatements,
+  attendeeStatements,
   updatingStatementIds,
   now,
   onSetStatementHidden,
@@ -51,9 +51,12 @@ export function AwaitingApprovalBox({
     number | null
   >(null);
   const approvalSections = splitAwaitingApprovalIntoSections(
-    awaitingApprovalStatements,
+    attendeeStatements,
     sectionCount,
   );
+  const awaitingApprovalCount = attendeeStatements.filter(
+    (statement) => statement.isAwaitingApproval,
+  ).length;
   const isPinnedSectionShown =
     pinnedSectionNumber !== null && pinnedSectionNumber <= sectionCount;
   const shownPinnedSectionNumber = isPinnedSectionShown
@@ -76,7 +79,7 @@ export function AwaitingApprovalBox({
     <div className="attention-bg attention-border rounded-xl border px-3 pt-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-xs font-bold uppercase tracking-wider attention-text">
-          Waiting for approval · {awaitingApprovalStatements.length}
+          Waiting for approval · {awaitingApprovalCount}
         </h3>
         <div className="flex items-center gap-3">
           {sectionCount > 1 && (

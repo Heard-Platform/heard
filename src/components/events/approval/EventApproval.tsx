@@ -40,7 +40,7 @@ export function EventApproval({
         </header>
         {awaitingApprovalStatements.length > 0 ? (
           <AwaitingApprovalBox
-            awaitingApprovalStatements={awaitingApprovalStatements}
+            attendeeStatements={attendeeStatements}
             updatingStatementIds={updatingStatementIds}
             now={now}
             onSetStatementHidden={onSetStatementHidden}
