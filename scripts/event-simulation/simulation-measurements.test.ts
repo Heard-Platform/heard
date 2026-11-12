@@ -90,6 +90,15 @@ Deno.test("StateChangeTracker times each change but not a phone's first look", (
   assertEquals(summaries[1].medianSecondsToSee, 2);
 });
 
+Deno.test("StateChangeTracker leaves out the states before the event opens", () => {
+  const tracker = new StateChangeTracker();
+  tracker.recordObservation(eventState({ status: "setup", updatedAt: 1_000 }), 1_500, false);
+  tracker.recordObservation(eventState({ status: "setup", updatedAt: 2_000 }), 2_500, false);
+  tracker.recordObservation(eventState({ updatedAt: 10_000 }), 11_000, false);
+
+  assertEquals(tracker.summarize().map((summary) => summary.label), ["Start"]);
+});
+
 Deno.test("VoteLedger finds votes the server undercounts", () => {
   const ledger = new VoteLedger();
   ledger.recordVoteCounted("a", "agree");

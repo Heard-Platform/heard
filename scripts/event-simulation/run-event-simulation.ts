@@ -10,13 +10,20 @@ import { sleep } from "../shared/sleep.ts";
 import { pickJoinDelayMs } from "./attendee-behavior.ts";
 import { SimulatedAttendee } from "./simulated-attendee.ts";
 import { createSimulationEvent } from "./simulation-event-setup.ts";
-import { buildEventLinks } from "../shared/event-links.ts";
+import { buildEventLinks, formatEventLinks } from "../shared/event-links.ts";
 import { StateChangeTracker, VoteLedger } from "./simulation-measurements.ts";
 import { parseSimulationOptions, type SimulationOptions } from "./simulation-options.ts";
 import { formatProgressLine, formatSimulationReport, PROGRESS_WINDOW_MS } from "./simulation-report.ts";
 
 const STOP_AFTER_END_MS = 5000;
 const VOTE_SETTLE_MS = 3000;
+const REPORT_SNAPSHOT_INTERVAL_MS = 30_000;
+const VOTE_CHECK_PENDING = "runs when the simulation ends";
+
+interface VoteCheck {
+  serverStatements: Statement[] | null;
+  error: string | null;
+}
 
 interface SimulationRun {
   attendees: SimulatedAttendee[];
@@ -38,35 +45,74 @@ async function runEventSimulation() {
     await createSimulationEvent(new HeardApiClient(environment, requireModeratorSessionId(environment)), new Date());
   const displayKey = moderatorApi ? (await moderatorApi.getEvent(eventId)).event.displayKey : null;
   printLinks(eventId, displayKey, options);
+  const reportFilePath = buildReportFilePath(eventId);
+  console.log(`Report saved every ${REPORT_SNAPSHOT_INTERVAL_MS / 1000}s to ${reportFilePath}\n`);
 
-  const run = await simulateAttendees(environment, eventId, options);
+  const run = await simulateAttendees(environment, eventId, options, reportFilePath);
   const simulationRecords = [...run.records];
   const voteCheck = await checkVotes(run, moderatorApi);
-  console.log(`\n${
-    formatSimulationReport({
-      attendeeCount: options.attendeeCount,
-      joinFailureCount: run.attendees.filter((attendee) => !attendee.hasJoined).length,
-      records: simulationRecords,
-      stateChanges: run.stateChanges.summarize(),
-      totalVotesSent: run.voteLedger.totalVotesSent,
-      undercountedVotes: voteCheck.serverStatements ? run.voteLedger.findUndercountedVotes(voteCheck.serverStatements) : [],
-      voteCheckError: voteCheck.error,
-    })
-  }`);
+  const report = formatSimulationReport(
+    buildSimulationResults(run, options, simulationRecords, voteCheck),
+  );
+  console.log(`\n${report}`);
+  await saveReport(reportFilePath, report);
   if (run.unexpectedErrors.length > 0) {
     console.log(`\nUNEXPECTED ERRORS\n${_.uniq(run.unexpectedErrors).map((message) => `  ${message}`).join("\n")}`);
   }
 }
 
+function buildReportFilePath(eventId: string): string {
+  return `simulation-report-event-${eventId}.txt`;
+}
+
+function buildSimulationResults(
+  run: SimulationRun,
+  options: SimulationOptions,
+  records: ApiCallRecord[],
+  voteCheck: VoteCheck,
+) {
+  return {
+    attendeeCount: options.attendeeCount,
+    joinFailureCount: run.attendees.filter((attendee) => !attendee.hasJoined).length,
+    records,
+    stateChanges: run.stateChanges.summarize(),
+    totalVotesSent: run.voteLedger.totalVotesSent,
+    undercountedVotes: voteCheck.serverStatements
+      ? run.voteLedger.findUndercountedVotes(voteCheck.serverStatements)
+      : [],
+    voteCheckError: voteCheck.error,
+  };
+}
+
+async function saveReport(reportFilePath: string, report: string) {
+  try {
+    await Deno.writeTextFile(reportFilePath, `${report}\n`);
+  } catch (error) {
+    console.error(
+      `Couldn't save the report to ${reportFilePath}: ${error instanceof Error ? error.message : error}`,
+    );
+  }
+}
+
+function saveReportSnapshot(
+  run: SimulationRun,
+  options: SimulationOptions,
+  reportFilePath: string,
+) {
+  const pendingVoteCheck = { serverStatements: null, error: VOTE_CHECK_PENDING };
+  const report = formatSimulationReport(
+    buildSimulationResults(run, options, [...run.records], pendingVoteCheck),
+  );
+  saveReport(reportFilePath, report);
+}
+
 function printLinks(eventId: string, displayKey: string | null, options: SimulationOptions) {
   const links = buildEventLinks(eventId, displayKey);
   console.log(`Event ${eventId}`);
-  console.log(`  Moderator controls: ${links.moderatorControls}`);
-  console.log(`  Display:            ${links.display ?? "(set HEARD_MODERATOR_SESSION_ID to get the display link)"}`);
-  console.log(`  Join as a phone:    ${links.phone}`);
+  console.log(formatEventLinks(links).join("\n"));
   console.log(
     `\n${options.attendeeCount} simulated phones join over ${options.joinWindowMs / 1000}s. ` +
-      "Run the event from the moderator controls. The simulation stops after you press End, or on Ctrl+C.\n",
+      "Run the event from the display. The simulation stops after you press End, or on Ctrl+C.\n",
   );
 }
 
@@ -74,6 +120,7 @@ async function simulateAttendees(
   environment: HeardScriptEnvironment,
   eventId: string,
   options: SimulationOptions,
+  reportFilePath: string,
 ): Promise<SimulationRun> {
   const stopController = new AbortController();
   const stopOnInterrupt = () => stopController.abort();
@@ -120,6 +167,10 @@ async function simulateAttendees(
       recentRecords: run.records.filter((record) => now - record.finishedAt <= PROGRESS_WINDOW_MS),
     }));
   }, PROGRESS_WINDOW_MS);
+  const reportSnapshotTimer = setInterval(
+    () => saveReportSnapshot(run, options, reportFilePath),
+    REPORT_SNAPSHOT_INTERVAL_MS,
+  );
 
   await Promise.all(run.attendees.map(async (attendee) => {
     await sleep(pickJoinDelayMs(Math.random, options.joinWindowMs), stopController.signal);
@@ -130,6 +181,7 @@ async function simulateAttendees(
   }));
 
   clearInterval(progressTimer);
+  clearInterval(reportSnapshotTimer);
   Deno.removeSignalListener("SIGINT", stopOnInterrupt);
   return run;
 }
@@ -137,7 +189,7 @@ async function simulateAttendees(
 async function checkVotes(
   run: SimulationRun,
   moderatorApi: HeardApiClient | null,
-): Promise<{ serverStatements: Statement[] | null; error: string | null }> {
+): Promise<VoteCheck> {
   const checkingApi = moderatorApi ?? run.attendees.find((attendee) => attendee.hasJoined)?.api;
   const roomIds = run.latestEventState?.roomOrder ?? [];
   if (!checkingApi || roomIds.length === 0) {

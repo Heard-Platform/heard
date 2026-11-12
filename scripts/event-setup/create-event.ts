@@ -5,7 +5,7 @@ import {
   requireModeratorSessionId,
 } from "../shared/heard-script-environment.ts";
 import { createEventWithContent } from "../shared/event-creation.ts";
-import { buildEventLinks } from "../shared/event-links.ts";
+import { buildEventLinks, formatEventLinks } from "../shared/event-links.ts";
 import { parseEventSetupFile } from "./event-setup-file.ts";
 
 const USAGE =
@@ -41,9 +41,7 @@ async function createEvent() {
   const { event } = await moderatorApi.getEvent(eventId);
   const links = buildEventLinks(eventId, event.displayKey);
   console.log(`Done. Event ${eventId}`);
-  console.log(`  Moderator controls: ${links.moderatorControls}`);
-  console.log(`  Display:            ${links.display ?? "(none)"}`);
-  console.log(`  Join as a phone:    ${links.phone}`);
+  console.log(formatEventLinks(links).join("\n"));
 }
 
 try {
