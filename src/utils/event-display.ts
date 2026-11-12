@@ -40,36 +40,18 @@ const getVoteCount = (statement: Statement): number => getVoteShares(statement).
 export const isAttendeeStatement = (statement: Statement, startedAt: number | null): boolean =>
   startedAt !== null && statement.timestamp >= startedAt;
 
-const getAgreeShare = (statement: Statement): number => getVoteShares(statement).agree;
-
 const getTimestamp = (statement: Statement): number => statement.timestamp;
-
-const rankByAgreeShare = (statements: Statement[]): Statement[] =>
-  _.orderBy(statements, [getAgreeShare, getTimestamp], ["desc", "desc"]);
-
-const rankBySplit = (statements: Statement[]): Statement[] =>
-  _.orderBy(statements, [getAgreeDisagreeGap, getTimestamp], ["asc", "desc"]);
-
-function pickAttendeeStatementsOnBoard(attendeeStatements: Statement[]): Statement[] {
-  const qualifiedAttendeeStatements = attendeeStatements.filter(
-    (statement) => getVoteCount(statement) >= ATTENDEE_STATEMENT_MIN_VOTES_FOR_BOARD,
-  );
-  const rankingsTakingTurns = [rankByAgreeShare(qualifiedAttendeeStatements), rankBySplit(qualifiedAttendeeStatements)];
-  const slotCount = Math.min(ATTENDEE_STATEMENT_BOARD_SLOTS, qualifiedAttendeeStatements.length);
-
-  return _.range(slotCount).reduce<Statement[]>((pickedStatements, slotIndex) => {
-    const rankingForSlot = rankingsTakingTurns[slotIndex % rankingsTakingTurns.length];
-    const nextStatement = rankingForSlot.find((statement) => !pickedStatements.includes(statement));
-    return nextStatement ? [...pickedStatements, nextStatement] : pickedStatements;
-  }, []);
-}
 
 export function pickBoardStatements(statements: Statement[], startedAt: number | null): Statement[] {
   const [attendeeStatements, seedStatements] = _.partition(
     statements.filter((statement) => !statement.isHidden),
     (statement) => isAttendeeStatement(statement, startedAt),
   );
-  const attendeeStatementsOnBoard = pickAttendeeStatementsOnBoard(attendeeStatements);
+  const attendeeStatementsOnBoard = _.orderBy(
+    attendeeStatements.filter((statement) => getVoteCount(statement) >= ATTENDEE_STATEMENT_MIN_VOTES_FOR_BOARD),
+    [getVoteCount, getTimestamp],
+    ["desc", "desc"],
+  ).slice(0, ATTENDEE_STATEMENT_BOARD_SLOTS);
 
   const seedStatementIdsOnBoard = new Set(
     _.orderBy(seedStatements, getVoteCount, "desc")

@@ -70,60 +70,33 @@ describe("pickBoardStatements", () => {
     expect(statementIds(boardStatements)).toEqual(["seed", "five"]);
   });
 
-  it("lets attendee statements push out seeds, up to 5 of the 7 rows, taking turns most agreed and most split", () => {
+  it("lets attendee statements push out seeds, up to 5 of the 7 rows, the ones with the most votes", () => {
     const seedStatements = Array.from({ length: 7 }, (_, seedNumber) =>
       statement(`seed${seedNumber}`, { agrees: 50 + seedNumber }),
     );
     const boardStatements = pickBoardStatements(
       [
         ...seedStatements,
-        attendeeStatement("agreed1", { agrees: 10 }),
-        attendeeStatement("split1", { agrees: 5, disagrees: 5 }),
-        attendeeStatement("agreed2", { agrees: 9, disagrees: 1 }),
-        attendeeStatement("split2", { agrees: 6, disagrees: 4 }),
-        attendeeStatement("agreed3", { agrees: 8, disagrees: 2 }),
-        attendeeStatement("left-out", { agrees: 1, disagrees: 9 }),
+        attendeeStatement("six", { agrees: 6 }),
+        attendeeStatement("ten", { agrees: 10 }),
+        attendeeStatement("left-out", { agrees: 5 }),
+        attendeeStatement("eight", { disagrees: 8 }),
+        attendeeStatement("nine", { agrees: 5, disagrees: 4 }),
+        attendeeStatement("seven", { agrees: 3, passes: 4 }),
       ],
       STARTED_AT,
     );
-    expect(statementIds(boardStatements)).toEqual(["seed5", "seed6", "agreed1", "split1", "agreed2", "split2", "agreed3"]);
+    expect(statementIds(boardStatements)).toEqual(["seed5", "seed6", "ten", "nine", "eight", "seven", "six"]);
   });
 
-  it("puts the most agreed and the most split attendee statements first", () => {
+  it("breaks vote ties in favor of the newer attendee statement", () => {
     const boardStatements = pickBoardStatements(
-      [
-        attendeeStatement("lopsided", { agrees: 1, disagrees: 9 }),
-        attendeeStatement("agreed", { agrees: 9, disagrees: 1 }),
-        attendeeStatement("split", { agrees: 5, disagrees: 5 }),
-      ],
+      ["first", "second", "third", "fourth", "fifth", "sixth"].map((id, index) =>
+        attendeeStatement(id, { agrees: 5 }, STARTED_AT + index + 1),
+      ),
       STARTED_AT,
     );
-    expect(statementIds(boardStatements)).toEqual(["agreed", "split", "lopsided"]);
-  });
-
-  it("lets a newer, more agreed attendee statement beat an older one with more votes", () => {
-    const boardStatements = pickBoardStatements(
-      [
-        attendeeStatement("old", { agrees: 20, disagrees: 10 }, STARTED_AT + 1),
-        attendeeStatement("old-lopsided", { agrees: 2, disagrees: 28 }, STARTED_AT + 2),
-        attendeeStatement("new", { agrees: 5 }, STARTED_AT + 3),
-      ],
-      STARTED_AT,
-    );
-    expect(statementIds(boardStatements)).toEqual(["new", "old", "old-lopsided"]);
-  });
-
-  it("breaks ties in favor of the newer attendee statement", () => {
-    const boardStatements = pickBoardStatements(
-      [
-        attendeeStatement("older", { agrees: 6 }, STARTED_AT + 1),
-        attendeeStatement("newer", { agrees: 5 }, STARTED_AT + 2),
-        attendeeStatement("older-split", { agrees: 3, disagrees: 3 }, STARTED_AT + 3),
-        attendeeStatement("newer-split", { agrees: 3, disagrees: 3 }, STARTED_AT + 4),
-      ],
-      STARTED_AT,
-    );
-    expect(statementIds(boardStatements)).toEqual(["newer", "newer-split", "older", "older-split"]);
+    expect(statementIds(boardStatements)).toEqual(["sixth", "fifth", "fourth", "third", "second"]);
   });
 
   it("caps the board at 7, dropping the statements from before Start with the fewest votes", () => {
