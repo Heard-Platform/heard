@@ -14,8 +14,6 @@ export interface ProgressSnapshot {
   elapsedMs: number;
   joinedCount: number;
   attendeeCount: number;
-  peopleHere: number | null;
-  answeringQuestions: number | null;
   recentRecords: ApiCallRecord[];
 }
 
@@ -42,8 +40,6 @@ export function formatProgressLine(snapshot: ProgressSnapshot): string {
   return [
     formatElapsed(snapshot.elapsedMs),
     `joined ${snapshot.joinedCount}/${snapshot.attendeeCount}`,
-    `here ${snapshot.peopleHere ?? "-"}`,
-    `answering ${snapshot.answeringQuestions ?? "-"}`,
     `${requestsPerSecond.toFixed(1)} req/s`,
     `p95 ${Math.round(percentile(durations, 0.95))}ms`,
     `errors ${snapshot.recentRecords.filter(isFailedCall).length}`,

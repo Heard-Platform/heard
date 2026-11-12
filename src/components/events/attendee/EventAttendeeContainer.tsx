@@ -35,7 +35,12 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
   const [localVotes, setLocalVotes] = useState<Record<string, VoteType>>({});
   const [statementText, setStatementText] = useState("");
   const heartbeatRef = useRef<LiveHeartbeat | null>(null);
-  const { eventState, error } = useEventPolling(eventId, EVENT_POLL_MS, () => heartbeatRef.current);
+  const { eventState, error } = useEventPolling(
+    eventId,
+    false,
+    EVENT_POLL_MS,
+    () => heartbeatRef.current,
+  );
   const currentRoomId = eventState?.status === "live" ? eventState.currentRoomId : null;
   const { post, refresh: refreshPost, addStatement } = useEventPost(currentRoomId);
   const canAnswerQuestions =
@@ -162,15 +167,13 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
         />
       );
     case "starting":
-      return <EventLobby moment="starting" peopleHere={eventState.peopleHere} />;
+      return <EventLobby moment="starting" />;
     case "paused":
       return <EventLobby moment="paused" />;
     case "waiting":
       return (
         <EventLobby
           moment="waiting"
-          peopleHere={eventState.peopleHere}
-          finishedCurrentPost={eventState.finishedCurrentPost}
           statementText={statementText}
           newStatementCount={cardsLeftCount}
           onStatementTextChange={setStatementText}

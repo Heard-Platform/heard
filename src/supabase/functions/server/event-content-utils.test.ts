@@ -3,6 +3,7 @@ import {
   isEventStatement,
   isEventVote,
   moveVotesToMergeTargets,
+  trimVotersToViewer,
   updateVoteCounts,
 } from "./event-content-utils.ts";
 import type {
@@ -163,3 +164,33 @@ Deno.test(
     ]);
   },
 );
+
+Deno.test(
+  "trimVotersToViewer - keeps only the viewer's own vote on each statement",
+  () => {
+    const statements = [
+      { ...STATEMENT, id: "voted", voters: { viewer: "agree", other: "pass" } },
+      { ...STATEMENT, id: "not-voted", voters: { other: "disagree" } },
+      { ...STATEMENT, id: "no-voters", voters: {} },
+    ] satisfies Statement[];
+    const trimmed = trimVotersToViewer(statements, "viewer");
+    assertEquals(
+      trimmed.map(({ id, voters }) => ({ id, voters })),
+      [
+        { id: "voted", voters: { viewer: "agree" } },
+        { id: "not-voted", voters: {} },
+        { id: "no-voters", voters: {} },
+      ],
+    );
+    assertEquals(trimmed[0].agrees, STATEMENT.agrees);
+  },
+);
+
+Deno.test("trimVotersToViewer - no voters without a viewer", () => {
+  const trimmed = trimVotersToViewer(
+    [{ ...STATEMENT, voters: { someone: "agree" } }],
+    undefined,
+  );
+  assertEquals(trimmed[0].voters, {});
+});
+

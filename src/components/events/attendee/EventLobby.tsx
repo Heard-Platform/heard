@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { pluralizePerson, pluralizeStatement } from "../../../utils/text";
+import { pluralizeStatement } from "../../../utils/text";
 import { Button } from "../../ui/button";
 import { Textarea } from "../../ui/textarea";
 import { STATEMENT_MAX_LENGTH } from "../constants";
@@ -7,13 +7,11 @@ import { AttendeeFrame, AttendeeMessage } from "./AttendeeFrame";
 
 type EventLobbyProps =
   | { moment: "closed" }
-  | { moment: "starting"; peopleHere: number }
+  | { moment: "starting" }
   | { moment: "paused" }
   | { moment: "ended" }
   | {
       moment: "waiting";
-      peopleHere: number;
-      finishedCurrentPost: number;
       statementText: string;
       newStatementCount: number;
       onStatementTextChange: (text: string) => void;
@@ -37,7 +35,6 @@ export function EventLobby(props: EventLobbyProps) {
           <AttendeeMessage
             title="You're in."
             body="The event starts soon. Questions will appear here."
-            chip={`${props.peopleHere} ${pluralizePerson(props.peopleHere)} here`}
           />
         </div>
       )}
@@ -64,8 +61,6 @@ type WaitingForOthersProps = Omit<
 >;
 
 function WaitingForOthers({
-  peopleHere,
-  finishedCurrentPost,
   statementText,
   newStatementCount,
   onStatementTextChange,
@@ -88,7 +83,6 @@ function WaitingForOthers({
       <div className="mt-4">
         <AttendeeMessage
           title="Waiting for the others"
-          chip={`${finishedCurrentPost} of ${peopleHere} done`}
           body="While you wait: what did we miss? The room votes on it."
         />
       </div>

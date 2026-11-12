@@ -22,7 +22,11 @@ interface EventDisplayContainerProps {
 }
 
 export function EventDisplayContainer({ eventId, displayKey }: EventDisplayContainerProps) {
-  const { eventState, error, refresh, applyEventState } = useEventPolling(eventId, DISPLAY_POLL_MS);
+  const { eventState, error, refresh, applyEventState } = useEventPolling(
+    eventId,
+    true,
+    DISPLAY_POLL_MS,
+  );
   const { isBusy, runAction } = useEventAction({ eventId, displayKey, eventState, applyEventState, refresh });
   const post = useEventPostRefreshedEvery(eventState?.currentRoomId ?? null, DISPLAY_POLL_MS);
   useReloadOnNonceChange(eventState?.reloadNonce);

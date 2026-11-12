@@ -11,6 +11,7 @@ import {
 } from "./kv-utils.tsx";
 import {
   loadEventStatementsAndVotes,
+  trimVotersToViewer,
 } from "./event-content-utils.ts";
 import { RouteError } from "./route-error.ts";
 import {
@@ -32,6 +33,8 @@ import {
   startVoting,
   countEventTotals,
   countEventHeadcount,
+  type EventHeadcount,
+  HEADCOUNT_NOT_REQUESTED,
   toLiveEventView,
 } from "./live-event-utils.ts";
 import type {
@@ -69,8 +72,24 @@ export const getOrCreateEventDisplayKey = async (eventId: number): Promise<strin
 export const getEventRooms = async (eventId: number): Promise<DebateRoom[]> =>
   (await getAllDebates()).filter((room) => room.eventId === eventId);
 
-export const loadEventView = async (eventId: number, state: EventState, now: number): Promise<LiveEventView> =>
-  toLiveEventView(state, countEventHeadcount(await getEventPresences(eventId), state, now));
+const loadEventHeadcount = async (
+  eventId: number,
+  state: EventState,
+  now: number,
+): Promise<EventHeadcount> =>
+  countEventHeadcount(await getEventPresences(eventId), state, now);
+
+export const loadEventView = async (
+  eventId: number,
+  state: EventState,
+  now: number,
+  includesHeadcount: boolean,
+): Promise<LiveEventView> => {
+  const headcount = includesHeadcount
+    ? await loadEventHeadcount(eventId, state, now)
+    : HEADCOUNT_NOT_REQUESTED;
+  return toLiveEventView(state, headcount);
+};
 
 export type EventPostCheck = { allowed: true } | { allowed: false; error: string };
 
@@ -155,12 +174,13 @@ export interface EventPost {
 
 export const loadEventPost = async (
   roomId: string,
+  viewerId: string | undefined,
 ): Promise<EventPost> => {
   const [room, { statements }] = await Promise.all([
     getDebateOrThrow(roomId),
     loadEventStatementsAndVotes([roomId]),
   ]);
-  return { room, statements };
+  return { room, statements: trimVotersToViewer(statements, viewerId) };
 };
 
 export interface EventActionParams {

@@ -11,6 +11,7 @@ import { usePolling } from "./usePolling";
 
 export function useEventPolling(
   eventId: string,
+  includesHeadcount: boolean,
   intervalMs: number = EVENT_POLL_MS,
   getHeartbeat?: () => LiveHeartbeat | null,
 ) {
@@ -33,7 +34,11 @@ export function useEventPolling(
   }, []);
 
   const refresh = useCallback(async (): Promise<boolean> => {
-    const response = await api.getLiveEvent(eventId, nextHeartbeat());
+    const response = await api.getLiveEvent(
+      eventId,
+      includesHeadcount,
+      nextHeartbeat(),
+    );
     if (response.success && response.data) {
       setError(null);
       applyEventState(response.data.live);
@@ -41,7 +46,7 @@ export function useEventPolling(
     }
     setError(response.error || "Couldn't reach the event");
     return false;
-  }, [eventId, applyEventState]);
+  }, [eventId, includesHeadcount, applyEventState]);
 
   usePolling(refresh, intervalMs, true);
 

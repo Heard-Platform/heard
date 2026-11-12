@@ -231,11 +231,17 @@ class ApiClient extends BaseApiClient {
 
   async getLiveEvent(
     eventId: string,
+    includesHeadcount: boolean,
     heartbeat?: LiveHeartbeat,
   ): Promise<ApiResponse<{ live: LiveEventView }>> {
-    const query = heartbeat
-      ? `?${new URLSearchParams({ screen: heartbeat.screen, shownRoomId: heartbeat.shownRoomId ?? "" })}`
-      : "";
+    const queryParams = new URLSearchParams();
+    if (includesHeadcount) queryParams.set("includesHeadcount", "true");
+    if (heartbeat) {
+      queryParams.set("screen", heartbeat.screen);
+      queryParams.set("shownRoomId", heartbeat.shownRoomId ?? "");
+    }
+    const queryString = queryParams.toString();
+    const query = queryString ? `?${queryString}` : "";
     return this.request<{ live: LiveEventView }>(`/event/${eventId}/live${query}`);
   }
 

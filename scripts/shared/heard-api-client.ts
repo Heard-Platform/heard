@@ -18,6 +18,8 @@ import type { RoomStatusResponse } from "../../src/types/api-responses.ts";
 import type { HeardScriptEnvironment } from "./heard-script-environment.ts";
 import { POLL_TIME_LIMIT_MS } from "../../src/utils/polling-loop.ts";
 
+export const REQUEST_TIME_LIMIT_MS = 30_000;
+
 export interface ApiCallRecord {
   routeName: string;
   status: number | null;
@@ -152,7 +154,7 @@ export class HeardApiClient {
       routeName,
       path,
       undefined,
-      AbortSignal.timeout(POLL_TIME_LIMIT_MS),
+      POLL_TIME_LIMIT_MS,
     );
   }
 
@@ -161,7 +163,7 @@ export class HeardApiClient {
     routeName: string,
     path: string,
     body?: unknown,
-    timeLimitSignal?: AbortSignal,
+    timeLimitMs: number = REQUEST_TIME_LIMIT_MS,
   ): Promise<T> {
     const startedAt = performance.now();
     let status: number | null = null;
@@ -170,7 +172,7 @@ export class HeardApiClient {
         method,
         headers: this.buildHeaders(),
         body: body === undefined ? undefined : JSON.stringify(body),
-        signal: timeLimitSignal,
+        signal: AbortSignal.timeout(timeLimitMs),
       });
       status = response.status;
       const payload = await response.json().catch(() => ({}));

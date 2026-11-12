@@ -246,8 +246,19 @@ app.get(
         type: "string",
         required: false,
       },
+      includesHeadcount: {
+        type: "string",
+        required: false,
+      },
     },
-    async ({ screen, shownRoomId }: { screen?: LiveScreen; shownRoomId?: string }, c: Context) => {
+    async (
+      { screen, shownRoomId, includesHeadcount }: {
+        screen?: LiveScreen;
+        shownRoomId?: string;
+        includesHeadcount?: string;
+      },
+      c: Context,
+    ) => {
       const eventId = parseEventId(c.req.param("eventId"));
       const userId = c.get("userId");
       const now = Date.now();
@@ -260,7 +271,14 @@ app.get(
         presence && saveEventPresence(eventId, presence),
       ]);
       const state = eventStateOrDefault(stored, now);
-      return { live: await loadEventView(eventId, state, now) };
+      return {
+        live: await loadEventView(
+          eventId,
+          state,
+          now,
+          includesHeadcount === "true",
+        ),
+      };
     },
     "Failed to fetch live event",
   ),
@@ -320,7 +338,7 @@ app.post(
       const next = await applyEventAction(eventId, state, action, { roomOrder, fromIndex }, now);
 
       await saveLiveEventState(eventId, next);
-      return { live: await loadEventView(eventId, next, now) };
+      return { live: await loadEventView(eventId, next, now, true) };
     },
     "Failed to update live event",
   ),
@@ -375,7 +393,7 @@ app.get(
     async (_params, c: Context) => {
       const roomId = c.req.param("roomId");
       if (!roomId) throw new RouteError("A post ID is required", 400);
-      return { post: await loadEventPost(roomId) };
+      return { post: await loadEventPost(roomId, c.get("userId")) };
     },
     "Failed to load the event post",
   ),

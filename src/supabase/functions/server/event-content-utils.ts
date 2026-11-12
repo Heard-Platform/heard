@@ -21,6 +21,23 @@ export const isEventStatement = (
   statement: Pick<Statement, "source">,
 ): boolean => statement.source !== "feed";
 
+const reduceToViewerVotes = (
+  voters: Statement["voters"],
+  viewerId: string | undefined,
+): Statement["voters"] => {
+  if (!viewerId || !voters[viewerId]) return {};
+  return { [viewerId]: voters[viewerId] };
+};
+
+export const trimVotersToViewer = (
+  statements: Statement[],
+  viewerId: string | undefined,
+): Statement[] =>
+  statements.map((statement) => ({
+    ...statement,
+    voters: reduceToViewerVotes(statement.voters, viewerId),
+  }));
+
 export const updateVoteCounts = (
   statements: Statement[],
   votes: Pick<Vote, "statementId" | "userId" | "voteType">[],

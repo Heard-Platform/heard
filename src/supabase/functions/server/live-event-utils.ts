@@ -70,6 +70,12 @@ export const defaultLiveEventState = (now: number): LiveEventState => ({
 export const eventStateOrDefault = (stored: LiveEventState | null, now: number): LiveEventState =>
   stored ? { ...defaultLiveEventState(stored.updatedAt), ...stored } : defaultLiveEventState(now);
 
+export const HEADCOUNT_NOT_REQUESTED: EventHeadcount = {
+  peopleHere: 0,
+  answeringQuestions: 0,
+  finishedCurrentPost: 0,
+};
+
 export const toLiveEventView = (state: LiveEventState, headcount: EventHeadcount): LiveEventView => ({
   ...state,
   currentRoomId: currentRoomId(state),
