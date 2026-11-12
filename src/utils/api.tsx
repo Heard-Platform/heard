@@ -96,6 +96,15 @@ export async function safelyMakeApiCall<T>(
   }
 }
 
+export interface LiveEventRequestOptions {
+  includesHeadcount: boolean;
+  heartbeat?: LiveHeartbeat;
+}
+
+export interface EventPostRequestOptions {
+  includesVoteCounts: boolean;
+}
+
 class ApiClient extends BaseApiClient {
   async getUser() {
     return this.request<{ user: UserSession }>("/user/me");
@@ -232,8 +241,7 @@ class ApiClient extends BaseApiClient {
 
   async getLiveEvent(
     eventId: string,
-    includesHeadcount: boolean,
-    heartbeat?: LiveHeartbeat,
+    { includesHeadcount, heartbeat }: LiveEventRequestOptions,
   ): Promise<ApiResponse<{ live: LiveEventView }>> {
     const queryParams = new URLSearchParams();
     if (includesHeadcount) queryParams.set("includesHeadcount", "true");
@@ -333,8 +341,10 @@ class ApiClient extends BaseApiClient {
 
   async getEventPost(
     roomId: string,
+    { includesVoteCounts }: EventPostRequestOptions,
   ): Promise<ApiResponse<{ post: EventPost }>> {
-    return this.request<{ post: EventPost }>(`/event-post/${roomId}`);
+    const query = includesVoteCounts ? "" : "?includesVoteCounts=false";
+    return this.request<{ post: EventPost }>(`/event-post/${roomId}${query}`);
   }
 
   async getEventReport(

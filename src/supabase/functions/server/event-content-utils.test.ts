@@ -2,6 +2,7 @@ import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
   isEventStatement,
   isEventVote,
+  setVotersToViewerEventVotes,
   moveVotesToMergeTargets,
   trimVotersToViewer,
   updateVoteCounts,
@@ -192,5 +193,41 @@ Deno.test("trimVotersToViewer - no voters without a viewer", () => {
     undefined,
   );
   assertEquals(trimmed[0].voters, {});
+});
+
+Deno.test(
+  "setVotersToViewerEventVotes - keeps only the viewer's own event votes",
+  () => {
+    const statements = [
+      { ...STATEMENT, id: "voted", voters: { other: "agree" } },
+      { ...STATEMENT, id: "voted-in-feed", voters: {} },
+      { ...STATEMENT, id: "not-voted", voters: { other: "pass" } },
+    ] satisfies Statement[];
+    const marked = setVotersToViewerEventVotes(
+      statements,
+      [
+        { statementId: "voted", voteType: "disagree", source: "event" },
+        { statementId: "voted-in-feed", voteType: "agree", source: "feed" },
+      ],
+      "viewer",
+    );
+    assertEquals(
+      marked.map(({ id, voters }) => ({ id, voters })),
+      [
+        { id: "voted", voters: { viewer: "disagree" } },
+        { id: "voted-in-feed", voters: {} },
+        { id: "not-voted", voters: {} },
+      ],
+    );
+  },
+);
+
+Deno.test("setVotersToViewerEventVotes - no voters without a viewer", () => {
+  const marked = setVotersToViewerEventVotes(
+    [{ ...STATEMENT, voters: { other: "agree" } }],
+    [{ statementId: STATEMENT.id, voteType: "agree", source: "event" }],
+    undefined,
+  );
+  assertEquals(marked[0].voters, {});
 });
 

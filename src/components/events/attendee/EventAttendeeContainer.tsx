@@ -35,14 +35,14 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
   const [localVotes, setLocalVotes] = useState<Record<string, VoteType>>({});
   const [statementText, setStatementText] = useState("");
   const heartbeatRef = useRef<LiveHeartbeat | null>(null);
-  const { eventState, error } = useEventPolling(
-    eventId,
-    false,
-    EVENT_POLL_MS,
-    () => heartbeatRef.current,
-  );
+  const { eventState, error } = useEventPolling(eventId, {
+    includesHeadcount: false,
+    getHeartbeat: () => heartbeatRef.current,
+  });
   const currentRoomId = eventState?.status === "live" ? eventState.currentRoomId : null;
-  const { post, refresh: refreshPost, addStatement } = useEventPost(currentRoomId);
+  const { post, refresh: refreshPost, addStatement } = useEventPost(currentRoomId, {
+    includesVoteCounts: false,
+  });
   const canAnswerQuestions =
     eventState?.status === "open" || eventState?.status === "live";
 
@@ -94,7 +94,10 @@ function EventAttendeeFlow({ eventId }: { eventId: string }) {
     setStatementText("");
   }, [currentRoomId]);
 
-  usePolling(refreshPost, EVENT_POLL_MS, screen === "waiting");
+  usePolling(refreshPost, {
+    intervalMs: EVENT_POLL_MS,
+    isEnabled: screen === "waiting",
+  });
 
   const handleVote = (statement: Statement, vote: VoteType) => {
     setLocalVotes((current) => ({ ...current, [statement.id]: vote }));

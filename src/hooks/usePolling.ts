@@ -1,10 +1,14 @@
 import { useEffect } from "react";
 import { type Poll, startPollingLoop } from "../utils/polling-loop";
 
+export interface PollingOptions {
+  intervalMs: number;
+  isEnabled?: boolean;
+}
+
 export function usePolling(
   poll: Poll,
-  intervalMs: number,
-  isEnabled: boolean,
+  { intervalMs, isEnabled = true }: PollingOptions,
 ) {
   useEffect(() => {
     if (!isEnabled) return;

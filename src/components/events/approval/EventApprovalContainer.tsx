@@ -121,7 +121,7 @@ function useEventApproval(eventId: string, displayKey: string | null) {
     [],
   );
 
-  usePolling(refresh, APPROVAL_POLL_MS, true);
+  usePolling(refresh, { intervalMs: APPROVAL_POLL_MS });
 
   return { approval, error, applyStatementVisibility };
 }

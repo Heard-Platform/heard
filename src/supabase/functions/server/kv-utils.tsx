@@ -366,6 +366,17 @@ export const getVote = async (
   return getParsedKvData<Vote>(`vote:${statementId}:${userId}`);
 };
 
+export const getVotesOfUserOnStatements = async (
+  userId: string,
+  statementIds: string[],
+): Promise<Vote[]> => {
+  if (statementIds.length === 0) return [];
+  const voteValues = await kv.mget(
+    statementIds.map((statementId) => `vote:${statementId}:${userId}`),
+  );
+  return parseKvDataArray<Vote>(voteValues);
+};
+
 export const getAllVotes = async (): Promise<Vote[]> => {
   return getAllRecords<Vote>("vote:");
 };

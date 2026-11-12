@@ -11,6 +11,7 @@ import {
 } from "./kv-utils.tsx";
 import {
   loadEventStatementsAndVotes,
+  loadEventStatementsForViewer,
   trimVotersToViewer,
 } from "./event-content-utils.ts";
 import { RouteError } from "./route-error.ts";
@@ -79,11 +80,15 @@ const loadEventHeadcount = async (
 ): Promise<EventHeadcount> =>
   countEventHeadcount(await getEventPresences(eventId), state, now);
 
+export interface EventViewOptions {
+  includesHeadcount: boolean;
+}
+
 export const loadEventView = async (
   eventId: number,
   state: EventState,
   now: number,
-  includesHeadcount: boolean,
+  { includesHeadcount }: EventViewOptions,
 ): Promise<LiveEventView> => {
   const headcount = includesHeadcount
     ? await loadEventHeadcount(eventId, state, now)
@@ -172,15 +177,31 @@ export interface EventPost {
   statements: Statement[];
 }
 
+const loadEventPostStatementsWithVoteCounts = async (
+  roomId: string,
+  viewerId: string | undefined,
+): Promise<Statement[]> => {
+  const { statements } = await loadEventStatementsAndVotes([roomId]);
+  return trimVotersToViewer(statements, viewerId);
+};
+
+export interface EventPostOptions {
+  includesVoteCounts: boolean;
+}
+
 export const loadEventPost = async (
   roomId: string,
   viewerId: string | undefined,
+  { includesVoteCounts }: EventPostOptions,
 ): Promise<EventPost> => {
-  const [room, { statements }] = await Promise.all([
+  const loadStatements = includesVoteCounts
+    ? loadEventPostStatementsWithVoteCounts
+    : loadEventStatementsForViewer;
+  const [room, statements] = await Promise.all([
     getDebateOrThrow(roomId),
-    loadEventStatementsAndVotes([roomId]),
+    loadStatements(roomId, viewerId),
   ]);
-  return { room, statements: trimVotersToViewer(statements, viewerId) };
+  return { room, statements };
 };
 
 export interface EventActionParams {
