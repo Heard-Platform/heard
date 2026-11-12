@@ -87,6 +87,7 @@ import { EventQuestionsDrawerStory } from "../stories/EventQuestionsDrawer.story
 import { OnboardingQuestionsPanelStory } from "../stories/OnboardingQuestionsPanel.story";
 import { EventDisplayStory } from "../stories/EventDisplay.story";
 import { EventSupportViewStory } from "../stories/EventSupportView.story";
+import { EventApprovalStory } from "../stories/EventApproval.story";
 import { EventReportStory } from "../stories/EventReport.story";
 
 interface ComponentShowcaseProps {
@@ -232,6 +233,7 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
                   Event Questions Drawer
                 </TabsTrigger>
                 <TabsTrigger value="event-display">Event Display</TabsTrigger>
+                <TabsTrigger value="event-approval">Event Approval</TabsTrigger>
                 <TabsTrigger value="event-support-view">Event Support View</TabsTrigger>
                 <TabsTrigger value="event-report">Event Report</TabsTrigger>
               </TabsList>
@@ -487,6 +489,9 @@ export function ComponentShowcase({ onExit }: ComponentShowcaseProps) {
               </TabsContent>
               <TabsContent value="event-display">
                 <EventDisplayStory />
+              </TabsContent>
+              <TabsContent value="event-approval">
+                <EventApprovalStory />
               </TabsContent>
               <TabsContent value="event-support-view">
                 <EventSupportViewStory />

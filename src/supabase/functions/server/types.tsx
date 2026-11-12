@@ -384,6 +384,11 @@ export type SupportViewAttendeeStatement = {
   createdAt: number;
 };
 
+export type EventApprovalView = {
+  eventName: string;
+  attendeeStatements: SupportViewAttendeeStatement[];
+};
+
 export type SupportViewMinute = {
   minuteSinceStart: number;
   votes: number;
@@ -403,7 +408,6 @@ export type SupportViewStats = {
   phoneCountsByState: Record<AttendeePhoneState, number>;
   currentPost: SupportViewCurrentPost | null;
   postsSoFar: SupportViewPost[];
-  attendeeStatements: SupportViewAttendeeStatement[];
   minutes: SupportViewMinute[];
   nextPressedAtMinutes: number[];
   startedAt: number | null;

@@ -26,9 +26,11 @@ export interface EventSetupPanelProps {
   live: Pick<LiveEventView, "status" | "currentIndex">;
   joinUrl: string;
   displayUrl: string;
+  approvalUrl: string;
   supportViewUrl: string;
   onReorder: (roomOrder: string[]) => void;
   onOpenDisplay: () => void;
+  onOpenApproval: () => void;
   onOpenSupportView: () => void;
   onOpenReport: () => void;
 }
@@ -38,9 +40,11 @@ export function EventSetupPanel({
   live,
   joinUrl,
   displayUrl,
+  approvalUrl,
   supportViewUrl,
   onReorder,
   onOpenDisplay,
+  onOpenApproval,
   onOpenSupportView,
   onOpenReport,
 }: EventSetupPanelProps) {
@@ -74,6 +78,7 @@ export function EventSetupPanel({
         <div className="space-y-1.5">
           <CopyLinkRow label="Join link" url={joinUrl} />
           <CopyLinkRow label="Display link" url={displayUrl} />
+          <CopyLinkRow label="Approval link" url={approvalUrl} />
           <CopyLinkRow label="Support view link" url={supportViewUrl} />
         </div>
 
@@ -83,6 +88,14 @@ export function EventSetupPanel({
           onClick={onOpenDisplay}
         >
           Open display
+        </Button>
+        <Button
+          variant="outline"
+          className="w-full"
+          disabled={!hasRooms}
+          onClick={onOpenApproval}
+        >
+          Open approval
         </Button>
         <Button
           variant="outline"

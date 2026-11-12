@@ -1,6 +1,5 @@
 import type {
   AttendeePhoneState,
-  SupportViewAttendeeStatement,
   SupportViewCurrentPost,
   SupportViewStats,
 } from "../../../types";
@@ -28,7 +27,6 @@ import {
   StackedBar,
 } from "./SupportParts";
 import { JoinedOverTimeChart, TimePerPostChart, VotedOnEachPostChart, VotesPerMinuteChart } from "./SupportCharts";
-import { AttendeeStatementsPanel } from "./AttendeeStatementsPanel";
 import { ReloadAllPhonesButton } from "./ReloadAllPhonesButton";
 
 const CLOCK_REFRESH_MS = 1000;
@@ -36,17 +34,13 @@ const SECOND_MS = 1000;
 
 interface EventSupportViewProps {
   stats: SupportViewStats;
-  updatingStatementIds: string[];
   isReloadingPhones: boolean;
-  onSetStatementHidden: (statement: SupportViewAttendeeStatement, isHidden: boolean) => void;
   onReloadAllPhones: () => void;
 }
 
 export function EventSupportView({
   stats,
-  updatingStatementIds,
   isReloadingPhones,
-  onSetStatementHidden,
   onReloadAllPhones,
 }: EventSupportViewProps) {
   const now = useNow(CLOCK_REFRESH_MS);
@@ -108,13 +102,6 @@ export function EventSupportView({
             <ReloadAllPhonesButton isReloadingPhones={isReloadingPhones} onReloadAllPhones={onReloadAllPhones} />
           </div>
         </div>
-
-        <AttendeeStatementsPanel
-          attendeeStatements={stats.attendeeStatements}
-          updatingStatementIds={updatingStatementIds}
-          now={now}
-          onSetStatementHidden={onSetStatementHidden}
-        />
       </div>
     </div>
   );

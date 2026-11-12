@@ -221,7 +221,6 @@ export const buildSupportViewStats = (sources: SupportViewSources): SupportViewS
     statementsFromRoom: attendeeStatements.filter((statement) => !statement.isHidden).length,
     currentPost: describeCurrentPost(sources, sessionVotes),
     postsSoFar: listPostsSoFar(state, rooms, sessionVotes, now),
-    attendeeStatements,
     minutes: listMinutes(sessionVotes, state.startedAt, sessionEndTime(state, now)),
     nextPressedAtMinutes: listNextPressedAtMinutes(state),
     startedAt: state.startedAt,

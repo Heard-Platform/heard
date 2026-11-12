@@ -234,7 +234,6 @@ Deno.test("buildSupportViewStats - session totals skip votes from before Start a
   });
   assertEquals(stats.votes, 1);
   assertEquals(stats.statementsFromRoom, 1);
-  assertEquals(stats.attendeeStatements.length, 2);
   assertEquals(stats.postCount, 3);
   assertEquals(stats.minutes.length, 7);
 });

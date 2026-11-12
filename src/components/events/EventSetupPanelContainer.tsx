@@ -11,6 +11,7 @@ import {
   createEventDisplayLink,
   createEventJoinLink,
   createEventSupportViewLink,
+  createEventApprovalLink,
   createLiveEventLink,
 } from "../../utils/url";
 import type { Event, LiveEventView } from "../../types";
@@ -42,6 +43,7 @@ export function EventSetupPanelContainer({ event }: { event: Event }) {
 
   const displayUrl = createEventDisplayLink(event.id, event.displayKey);
   const supportViewUrl = createEventSupportViewLink(event.id, event.displayKey);
+  const approvalUrl = createEventApprovalLink(event.id, event.displayKey);
 
   const handleReorder = async (roomOrder: string[]) => {
     const previous = live;
@@ -63,6 +65,10 @@ export function EventSetupPanelContainer({ event }: { event: Event }) {
     window.open(supportViewUrl, "_blank", "noopener");
   };
 
+  const handleOpenApproval = () => {
+    window.open(approvalUrl, "_blank", "noopener");
+  };
+
   const handleOpenReport = () => {
     const reportUrl = createLiveEventLink(event.id, "report");
     window.open(reportUrl, "_blank", "noopener");
@@ -75,9 +81,11 @@ export function EventSetupPanelContainer({ event }: { event: Event }) {
         live={live}
         joinUrl={createEventJoinLink(event.id).url}
         displayUrl={displayUrl}
+        approvalUrl={approvalUrl}
         supportViewUrl={supportViewUrl}
         onReorder={handleReorder}
         onOpenDisplay={handleOpenDisplay}
+        onOpenApproval={handleOpenApproval}
         onOpenSupportView={handleOpenSupportView}
         onOpenReport={handleOpenReport}
       />

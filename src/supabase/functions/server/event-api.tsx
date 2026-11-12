@@ -35,6 +35,7 @@ import {
 } from "./kv-utils.tsx";
 import { RouteError } from "./route-error.ts";
 import { loadAudienceBreakdown } from "./event-audience-breakdown-utils.ts";
+import { loadEventApprovalView } from "./event-approval-utils.ts";
 import {
   isValidOnboardingQuestionList,
   loadAttendeeOnboarding,
@@ -361,6 +362,26 @@ app.get(
       ),
     }),
     "Failed to load who's in the room",
+  ),
+);
+
+app.get(
+  "/make-server-f1a393b4/event/:eventId/approval",
+  defineRoute(
+    {
+      displayKey: {
+        type: "string",
+        required: false,
+      },
+    },
+    async ({ displayKey }: { displayKey?: string }, c: Context) => ({
+      approval: await loadEventApprovalView(
+        parseEventId(c.req.param("eventId")),
+        c.get("userId"),
+        displayKey,
+      ),
+    }),
+    "Failed to load statements for approval",
   ),
 );
 

@@ -102,6 +102,26 @@ export function splitAwaitingApprovalIntoSections(
   return sections;
 }
 
+export function orderSectionNumbersWithPinnedFirst(
+  sectionCount: number,
+  pinnedSectionNumber: number | null,
+): number[] {
+  const sectionNumbers = Array.from(
+    { length: sectionCount },
+    (_, index) => index + 1,
+  );
+  if (
+    pinnedSectionNumber === null ||
+    !sectionNumbers.includes(pinnedSectionNumber)
+  ) {
+    return sectionNumbers;
+  }
+  const otherSectionNumbers = sectionNumbers.filter(
+    (sectionNumber) => sectionNumber !== pinnedSectionNumber,
+  );
+  return [pinnedSectionNumber, ...otherSectionNumbers];
+}
+
 export function getFinishedPercent(currentPost: Pick<SupportViewCurrentPost, "finishedCount" | "swipingCount">): number {
   const phonesOnPost = currentPost.finishedCount + currentPost.swipingCount;
   if (phonesOnPost === 0) return 0;

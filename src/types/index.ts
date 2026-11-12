@@ -485,6 +485,11 @@ export interface SupportViewMinute {
   peopleJoined: number;
 }
 
+export interface EventApprovalView {
+  eventName: string;
+  attendeeStatements: SupportViewAttendeeStatement[];
+}
+
 export interface SupportViewStats {
   eventName: string;
   status: LiveEventStatus;
@@ -498,7 +503,6 @@ export interface SupportViewStats {
   phoneCountsByState: Record<AttendeePhoneState, number>;
   currentPost: SupportViewCurrentPost | null;
   postsSoFar: SupportViewPost[];
-  attendeeStatements: SupportViewAttendeeStatement[];
   minutes: SupportViewMinute[];
   nextPressedAtMinutes: number[];
   startedAt: number | null;

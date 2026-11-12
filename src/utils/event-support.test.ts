@@ -10,6 +10,7 @@ import {
   listPhoneStates,
   orderNewestFirst,
   orderOldestFirst,
+  orderSectionNumbersWithPinnedFirst,
   splitAwaitingApprovalIntoSections,
 } from "./event-support";
 
@@ -308,5 +309,19 @@ describe("getStatementVisibilityEventName", () => {
     expect(
       getStatementVisibilityEventName(decidedStatement, false),
     ).toBe("live_statement_unhidden");
+  });
+});
+
+describe("orderSectionNumbersWithPinnedFirst", () => {
+  it("keeps the natural order with nothing pinned", () => {
+    expect(orderSectionNumbersWithPinnedFirst(3, null)).toEqual([1, 2, 3]);
+  });
+
+  it("moves the pinned section to the top", () => {
+    expect(orderSectionNumbersWithPinnedFirst(4, 3)).toEqual([3, 1, 2, 4]);
+  });
+
+  it("ignores a pin past the section count", () => {
+    expect(orderSectionNumbersWithPinnedFirst(2, 4)).toEqual([1, 2]);
   });
 });

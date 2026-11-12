@@ -16,6 +16,7 @@ import { ComponentShowcase } from "./screens/ComponentShowcase";
 import { EventAttendeeContainer } from "./components/events/attendee/EventAttendeeContainer";
 import { EventDisplayContainer } from "./components/events/display/EventDisplayContainer";
 import { EventSupportViewContainer } from "./components/events/support/EventSupportViewContainer";
+import { EventApprovalContainer } from "./components/events/approval/EventApprovalContainer";
 import { ReportPageContainer } from "./components/events/report/ReportPageContainer";
 import { AdminPanel } from "./components/AdminPanel";
 import { AdminDashboard } from "./components/AdminDashboard";
@@ -44,6 +45,7 @@ import {
   parseEventIdFromUrl,
   parseDisplayedEventIdFromUrl,
   parseSupportViewEventIdFromUrl,
+  parseApprovalEventIdFromUrl,
   parseReportEventIdFromUrl,
   parseAttendedEventIdFromUrl,
   updateUrlForEvent,
@@ -162,6 +164,10 @@ function AppContent() {
     displayKey: string | null;
   } | null>(null);
   const [supportViewEvent, setSupportViewEvent] = useState<{
+    eventId: string;
+    displayKey: string | null;
+  } | null>(null);
+  const [approvalEvent, setApprovalEvent] = useState<{
     eventId: string;
     displayKey: string | null;
   } | null>(null);
@@ -464,6 +470,7 @@ function AppContent() {
       const eventIdFromUrl = parseEventIdFromUrl();
       const displayedEventIdFromUrl = parseDisplayedEventIdFromUrl();
       const supportViewEventIdFromUrl = parseSupportViewEventIdFromUrl();
+      const approvalEventIdFromUrl = parseApprovalEventIdFromUrl();
       const reportEventIdFromUrl = parseReportEventIdFromUrl();
       const attendedEventIdFromUrl =
         parseAttendedEventIdFromUrl() ??
@@ -596,6 +603,11 @@ function AppContent() {
           eventId: supportViewEventIdFromUrl,
           displayKey: takeDisplayKeyFromUrl(supportViewEventIdFromUrl),
         });
+      } else if (approvalEventIdFromUrl) {
+        setApprovalEvent({
+          eventId: approvalEventIdFromUrl,
+          displayKey: takeDisplayKeyFromUrl(approvalEventIdFromUrl),
+        });
       } else if (isStatementApprovalRoute) {
         setShowStatementApproval(true);
       } else if (reportEventIdFromUrl) {
@@ -719,6 +731,7 @@ function AppContent() {
     attendedEventId !== null ||
     displayedEvent !== null ||
     supportViewEvent !== null ||
+    approvalEvent !== null ||
     reportEventId !== null;
 
   useEffect(() => {
@@ -949,6 +962,15 @@ function AppContent() {
       <EventSupportViewContainer
         eventId={supportViewEvent.eventId}
         displayKey={supportViewEvent.displayKey}
+      />
+    );
+  }
+
+  if (approvalEvent) {
+    return (
+      <EventApprovalContainer
+        eventId={approvalEvent.eventId}
+        displayKey={approvalEvent.displayKey}
       />
     );
   }
