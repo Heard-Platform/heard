@@ -36,7 +36,7 @@ export function isBeforeSessionStart(
   return status === "setup" || status === "open";
 }
 
-export const EVENT_POLL_MS = 3000;
+export const EVENT_POLL_MS = 5000;
 export function pickNewestState<T extends { updatedAt: number }>(current: T | null, incoming: T): T {
   return current && current.updatedAt > incoming.updatedAt ? current : incoming;
 }
