@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import type { SupportViewAttendeeStatement, SupportViewStats } from "../../../types";
 import { usePolling } from "../../../hooks/usePolling";
 import { api } from "../../../utils/api";
@@ -15,7 +15,10 @@ interface EventSupportViewContainerProps {
 }
 
 export function EventSupportViewContainer({ eventId, displayKey }: EventSupportViewContainerProps) {
-  const { stats, error, refresh } = useSupportViewStats(eventId, displayKey);
+  const { stats, error, applyStatementVisibility } = useSupportViewStats(
+    eventId,
+    displayKey,
+  );
   const [updatingStatementIds, setUpdatingStatementIds] = useState<string[]>([]);
   const [isReloadingPhones, setIsReloadingPhones] = useState(false);
 
@@ -27,7 +30,7 @@ export function EventSupportViewContainer({ eventId, displayKey }: EventSupportV
         getStatementVisibilityEventName(statement, isHidden),
         statement.roomId,
       );
-      await refresh();
+      applyStatementVisibility(statement.id, isHidden);
     } else {
       toast.error(response.error || "Couldn't update that statement");
     }
@@ -69,9 +72,18 @@ export function EventSupportViewContainer({ eventId, displayKey }: EventSupportV
 function useSupportViewStats(eventId: string, displayKey: string | null) {
   const [stats, setStats] = useState<SupportViewStats | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const latestStatsChangeNumberRef = useRef(0);
+
+  const startStatsChange = () => {
+    latestStatsChangeNumberRef.current += 1;
+    return latestStatsChangeNumberRef.current;
+  };
 
   const refresh = useCallback(async (): Promise<boolean> => {
+    const changeNumber = startStatsChange();
     const response = await api.getSupportView(eventId, displayKey);
+    const isOvertaken = changeNumber !== latestStatsChangeNumberRef.current;
+    if (isOvertaken) return response.success;
     if (response.success && response.data) {
       setStats(response.data.stats);
       setError(null);
@@ -81,7 +93,24 @@ function useSupportViewStats(eventId: string, displayKey: string | null) {
     return false;
   }, [eventId, displayKey]);
 
+  const applyStatementVisibility = useCallback(
+    (statementId: string, isHidden: boolean) => {
+      startStatsChange();
+      setStats((current) =>
+        current && {
+          ...current,
+          attendeeStatements: current.attendeeStatements.map((statement) =>
+            statement.id === statementId
+              ? { ...statement, isHidden, isAwaitingApproval: false }
+              : statement,
+          ),
+        },
+      );
+    },
+    [],
+  );
+
   usePolling(refresh, SUPPORT_VIEW_POLL_MS, true);
 
-  return { stats, error, refresh };
+  return { stats, error, applyStatementVisibility };
 }
