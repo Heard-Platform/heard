@@ -5,6 +5,7 @@ export const GU_SHARING_ROOM_ID = "lr1lbfl6anmw8dcfv4";
 export const GU_SHARING_STATEMENT_ID = "tgfe6xzot2cmw8dcfxg";
 export const GU_ACTIVISM_ROOM_ID = "lr1lbfl6anmw8dcfv4";
 export const GU_US_ROOM_ID = "de6ter1pvhnmw8dcf5e";
+export const GU_US_STATEMENT_ID = "4too3u1q5e5mw8dcf6s";
 export const GU_FRIEND_ROOM_ID = "lr1lbfl6anmw8dcfv4";
 export const FIZZ_ROOM_ID = "o5kd5u0dk1kmw8dqyrj";
 
