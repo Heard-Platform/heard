@@ -108,7 +108,10 @@ export class StateChangeTracker {
   }
 
   summarize(): StateChangeSummary[] {
-    const states = _.sortBy([...this.statesByUpdatedAt.values()], "updatedAt");
+    const states = _.sortBy(
+      [...this.statesByUpdatedAt.values()],
+      "updatedAt",
+    ).filter((state: ObservedEventState) => state.status !== "setup");
     return states.map((state, index) => {
       const secondsToSee = this.secondsToSeeByUpdatedAt.get(state.updatedAt) ?? [];
       return {
