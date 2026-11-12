@@ -67,11 +67,10 @@ import type { FlyerVoteTally } from "./components/flyer/landing/FlyerLandingScre
 import type { FlyerVote } from "./components/flyer/FlyerVoteIntroCard";
 import { FeatureFlags, isFeatureEnabled } from "./utils/constants/feature-flags";
 import {
-  GU_SHARING_ROOM_ID,
-  GU_SHARING_STATEMENT_ID,
+  GU_US_ROOM_ID,
+  GU_US_STATEMENT_ID,
   ROOM_SHORT_ROUTES,
-  WAYMO_DC_ROOM_ID,
-  WAYMO_DC_STATEMENT_ID,
+  WAYMO_DC_ROOM_ID
 } from "./utils/constants/flyers";
 import { flyerVoteFailureMessage } from "./utils/flyer-vote-errors";
 import { EVENT_SHORT_ROUTES } from "./utils/constants/events";
@@ -102,7 +101,7 @@ const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: str
   shirt: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
   sign: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
   card: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
-  banner: { flyerId: GU_SHARING_ROOM_ID, statementId: GU_SHARING_STATEMENT_ID },
+  banner: { flyerId: GU_US_ROOM_ID, statementId: GU_US_STATEMENT_ID },
 };
 
 const IDEAS_ROOM_ID = "zmai0sb2fbemrxm4yc6";
