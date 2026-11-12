@@ -59,6 +59,7 @@ import {
   saveRoomDemographicAnswers,
 } from "./demographics-utils.ts";
 import { logActionUnlessRateLimited } from "./rate-limit-utils.ts";
+import { runInBackground } from "./background-utils.ts";
 import { markStatementAwaitingApproval } from "./moderation-utils.ts";
 import { notifyOfStatementAwaitingApproval } from "./statement-approval-email.ts";
 
@@ -603,15 +604,15 @@ app.post(
         );
       }
 
-      const isRateLimited = await logActionUnlessRateLimited(
-        userId,
-        "statement",
-      );
+      const [isRateLimited, room, user] = await Promise.all([
+        logActionUnlessRateLimited(userId, "statement"),
+        getDebateRoom(roomId),
+        getUserSession(userId),
+      ]);
       if (isRateLimited) {
         return c.json({ error: RATE_LIMITED_ERROR }, 429);
       }
 
-      const room = await getDebateRoom(roomId);
       if (!room || !room.isActive) {
         return c.json(
           { error: "Room not found or inactive" },
@@ -626,12 +627,12 @@ app.post(
         );
       }
 
-      const user = await getUserSession(userId);
       if (!user) {
         return c.json({ error: "User session not found" }, 404);
       }
 
-      if (statementSource === "event") {
+      const isEventStatement = statementSource === "event";
+      if (isEventStatement) {
         const canPost = await checkEventPosting(room, user);
         if (!canPost.allowed) {
           return c.json({ error: canPost.error }, 423);
@@ -663,8 +664,13 @@ app.post(
         await saveDebateRoom(room);
       }
 
-      await updateRoom(room);
-      await recordRoomEngagement(userId, roomId, now);
+      runInBackground(
+        Promise.all([
+          updateRoom(room),
+          recordRoomEngagement(userId, roomId, now),
+        ]),
+        `room activity for room ${roomId}`,
+      );
 
       // Convert phase to round number
       const getRoundNumber = (phase: Phase): number => {
@@ -709,18 +715,20 @@ app.post(
       }
 
       const basePoints = 50;
-      const totalPoints = basePoints;
+      const totalPoints = isEventStatement ? 0 : basePoints;
 
-      user.score += totalPoints;
-      user.streak += 1;
+      if (!isEventStatement) {
+        user.score += totalPoints;
+        user.streak += 1;
 
-      await saveUserSession(user);
+        await saveUserSession(user);
 
-      if (room.hostId && room.hostId !== userId) {
-        const roomCreator = await getUserSession(room.hostId);
-        if (roomCreator) {
-          roomCreator.score += 5;
-          await saveUserSession(roomCreator);
+        if (room.hostId && room.hostId !== userId) {
+          const roomCreator = await getUserSession(room.hostId);
+          if (roomCreator) {
+            roomCreator.score += 5;
+            await saveUserSession(roomCreator);
+          }
         }
       }
 
