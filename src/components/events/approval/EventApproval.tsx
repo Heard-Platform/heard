@@ -1,4 +1,3 @@
-import _ from "lodash";
 import { Eye, EyeOff } from "lucide-react";
 import type { SupportViewAttendeeStatement } from "../../../types";
 import { formatElapsed, orderNewestFirst } from "../../../utils/event-support";
@@ -24,9 +23,8 @@ export function EventApproval({
   now,
   onSetStatementHidden,
 }: EventApprovalProps) {
-  const [awaitingApprovalStatements, reviewedStatements] = _.partition(
-    attendeeStatements,
-    (statement) => statement.isAwaitingApproval,
+  const reviewedStatements = attendeeStatements.filter(
+    (statement) => !statement.isAwaitingApproval,
   );
 
   return (
@@ -38,16 +36,12 @@ export function EventApproval({
           </h1>
           <p className="text-sm secondary-text">Statement approval</p>
         </header>
-        {awaitingApprovalStatements.length > 0 ? (
-          <AwaitingApprovalBox
-            attendeeStatements={attendeeStatements}
-            updatingStatementIds={updatingStatementIds}
-            now={now}
-            onSetStatementHidden={onSetStatementHidden}
-          />
-        ) : (
-          <SupportNote>Nothing waiting for approval.</SupportNote>
-        )}
+        <AwaitingApprovalBox
+          attendeeStatements={attendeeStatements}
+          updatingStatementIds={updatingStatementIds}
+          now={now}
+          onSetStatementHidden={onSetStatementHidden}
+        />
         <SupportPanel
           title={`Reviewed · ${reviewedStatements.length}`}
         >
