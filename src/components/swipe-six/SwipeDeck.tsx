@@ -63,57 +63,59 @@ export function SwipeDeck({ items, votedCount, onVote, onSuperAgree }: SwipeDeck
       <div className="mt-4">
         <RoomProgressBar total={items.length} completed={votedCount} />
       </div>
-      {current && (
-        <h1 className="mt-4 text-xl font-bold leading-tight dark-text">
-          {current.room.topic}
-        </h1>
-      )}
-
-      <div
-        className="relative mt-5 h-48"
-        style={{ marginBottom: STACK_PEEK_PX }}
-      >
-        {cardsBehind.map((item, i) => (
-          <FlyerStackedCard
-            key={item.statement.id}
-            statement={item.statement}
-            depth={i + 1}
-            addedByHost={isAddedByHost(item)}
-          />
-        ))}
+      <div className="flex flex-1 flex-col justify-center">
         {current && (
-          <FlyerSwipeCard
-            ref={(handle) => {
-              if (handle) cardHandles.current.set(current.statement.id, handle);
-              else cardHandles.current.delete(current.statement.id);
-            }}
-            key={current.statement.id}
-            statement={current.statement}
-            addedByHost={isAddedByHost(current)}
-            heldAgreeChargeProgress={heldAgreeChargeProgress}
-            onDragStart={() => {}}
-            onSwiped={(vote) => onVote(current, vote)}
-            onSuperAgree={onSuperAgree && handleCardSuperAgreed}
-            onSuperAgreeFlyOff={handleSuperAgreeFlyOff}
-          />
+          <h1 className="mt-4 text-xl font-bold leading-tight dark-text">
+            {current.room.topic}
+          </h1>
         )}
-        {starTrails.map((trail) => (
-          <SuperAgreeStarTrail
-            key={trail.id}
-            startX={trail.startX}
-            onFinished={() => removeStarTrail(trail.id)}
-          />
-        ))}
-      </div>
 
-      <div className="pt-4">
-        <VoteButtonRow
-          superAgreeChargeProgress={heldAgreeChargeProgress}
-          onAgree={() => swipe("agree")}
-          onDisagree={() => swipe("disagree")}
-          onPass={() => swipe("pass")}
-          onSuperAgree={onSuperAgree && handleSuperAgreeHeld}
-        />
+        <div
+          className="relative mt-5 h-48"
+          style={{ marginBottom: STACK_PEEK_PX }}
+        >
+          {cardsBehind.map((item, i) => (
+            <FlyerStackedCard
+              key={item.statement.id}
+              statement={item.statement}
+              depth={i + 1}
+              addedByHost={isAddedByHost(item)}
+            />
+          ))}
+          {current && (
+            <FlyerSwipeCard
+              ref={(handle) => {
+                if (handle) cardHandles.current.set(current.statement.id, handle);
+                else cardHandles.current.delete(current.statement.id);
+              }}
+              key={current.statement.id}
+              statement={current.statement}
+              addedByHost={isAddedByHost(current)}
+              heldAgreeChargeProgress={heldAgreeChargeProgress}
+              onDragStart={() => {}}
+              onSwiped={(vote) => onVote(current, vote)}
+              onSuperAgree={onSuperAgree && handleCardSuperAgreed}
+              onSuperAgreeFlyOff={handleSuperAgreeFlyOff}
+            />
+          )}
+          {starTrails.map((trail) => (
+            <SuperAgreeStarTrail
+              key={trail.id}
+              startX={trail.startX}
+              onFinished={() => removeStarTrail(trail.id)}
+            />
+          ))}
+        </div>
+
+        <div className="pt-4">
+          <VoteButtonRow
+            superAgreeChargeProgress={heldAgreeChargeProgress}
+            onAgree={() => swipe("agree")}
+            onDisagree={() => swipe("disagree")}
+            onPass={() => swipe("pass")}
+            onSuperAgree={onSuperAgree && handleSuperAgreeHeld}
+          />
+        </div>
       </div>
     </>
   );

@@ -83,7 +83,7 @@ function WaitingForOthers({
       <div className="mt-4">
         <AttendeeMessage
           title="Waiting for the others"
-          body="While you wait: what did we miss? The room votes on it."
+          body="While you wait: Add a statement of your own for the room to vote on."
         />
       </div>
 
