@@ -132,17 +132,6 @@ const recountStatementVotes = async (
   };
 };
 
-const saveRoomActivity = async (
-  room: DebateRoom,
-  userId: string,
-  now: number,
-) => {
-  await Promise.all([
-    saveDebateRoom(room),
-    recordRoomEngagement(userId, room.id, now),
-  ]);
-};
-
 type ProcessVoteInputs = {
   statementId: string;
   userId: string;
@@ -210,7 +199,8 @@ export const processVote = async ({
     };
   }
 
-  if (!room.participants.includes(userId)) {
+  const isNewParticipant = !room.participants.includes(userId);
+  if (isNewParticipant) {
     room.participants.push(userId);
     console.log(
       `Auto-added user ${userId} to room ${statement.roomId} via voting`,
@@ -251,9 +241,16 @@ export const processVote = async ({
   room.lastActivityAt = now;
   room.totalVotes = (room.totalVotes || 0) + voteCountChange;
   runInBackground(
-    saveRoomActivity(room, userId, now),
-    `room activity for room ${statement.roomId}`,
+    recordRoomEngagement(userId, room.id, now),
+    `room engagement for room ${statement.roomId}`,
   );
+  const shouldSaveRoom = !isEventVote || isNewParticipant;
+  if (shouldSaveRoom) {
+    runInBackground(
+      saveDebateRoom(room),
+      `room save for room ${statement.roomId}`,
+    );
+  }
 
   const updatedStatement = isEventVote
     ? applyVoteToStatement(
@@ -273,10 +270,12 @@ export const processVote = async ({
     pointsEarned > 0 ? saveUser(user) : Promise.resolve(),
   ]);
 
-  runInBackground(
-    recomputeClustersIfNeeded(room),
-    `cluster freshness check for room ${statement.roomId}`,
-  );
+  if (!isEventVote) {
+    runInBackground(
+      recomputeClustersIfNeeded(room),
+      `cluster freshness check for room ${statement.roomId}`,
+    );
+  }
 
   if (!isEventVote) {
     runInBackground(
