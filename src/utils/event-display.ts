@@ -5,7 +5,7 @@ import { pluralizePerson } from "./text";
 export type DisplayView = "agree-only" | "agree-vs-disagree" | "agree-split";
 
 export const ATTENDEE_STATEMENT_MIN_VOTES_FOR_BOARD = 5;
-export const ATTENDEE_STATEMENT_BOARD_SLOTS = 2;
+export const ATTENDEE_STATEMENT_BOARD_SLOTS = 5;
 export const BOARD_STATEMENT_LIMIT = 7;
 export const CONSENSUS_COLUMN_SIZE = 4;
 export const NEW_STATEMENT_CELEBRATE_MS = 15_000;
@@ -40,6 +40,8 @@ const getVoteCount = (statement: Statement): number => getVoteShares(statement).
 export const isAttendeeStatement = (statement: Statement, startedAt: number | null): boolean =>
   startedAt !== null && statement.timestamp >= startedAt;
 
+const getTimestamp = (statement: Statement): number => statement.timestamp;
+
 export function pickBoardStatements(statements: Statement[], startedAt: number | null): Statement[] {
   const [attendeeStatements, seedStatements] = _.partition(
     statements.filter((statement) => !statement.isHidden),
@@ -47,8 +49,8 @@ export function pickBoardStatements(statements: Statement[], startedAt: number |
   );
   const attendeeStatementsOnBoard = _.orderBy(
     attendeeStatements.filter((statement) => getVoteCount(statement) >= ATTENDEE_STATEMENT_MIN_VOTES_FOR_BOARD),
-    getVoteCount,
-    "desc",
+    [getVoteCount, getTimestamp],
+    ["desc", "desc"],
   ).slice(0, ATTENDEE_STATEMENT_BOARD_SLOTS);
 
   const seedStatementIdsOnBoard = new Set(

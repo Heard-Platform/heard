@@ -70,12 +70,33 @@ describe("pickBoardStatements", () => {
     expect(statementIds(boardStatements)).toEqual(["seed", "five"]);
   });
 
-  it("holds at most 2 attendee statements, the ones with the most votes", () => {
+  it("lets attendee statements push out seeds, up to 5 of the 7 rows, the ones with the most votes", () => {
+    const seedStatements = Array.from({ length: 7 }, (_, seedNumber) =>
+      statement(`seed${seedNumber}`, { agrees: 50 + seedNumber }),
+    );
     const boardStatements = pickBoardStatements(
-      [attendeeStatement("six", { agrees: 6 }), attendeeStatement("nine", { agrees: 9 }), attendeeStatement("seven", { disagrees: 7 })],
+      [
+        ...seedStatements,
+        attendeeStatement("six", { agrees: 6 }),
+        attendeeStatement("ten", { agrees: 10 }),
+        attendeeStatement("left-out", { agrees: 5 }),
+        attendeeStatement("eight", { disagrees: 8 }),
+        attendeeStatement("nine", { agrees: 5, disagrees: 4 }),
+        attendeeStatement("seven", { agrees: 3, passes: 4 }),
+      ],
       STARTED_AT,
     );
-    expect(statementIds(boardStatements)).toEqual(["nine", "seven"]);
+    expect(statementIds(boardStatements)).toEqual(["seed5", "seed6", "ten", "nine", "eight", "seven", "six"]);
+  });
+
+  it("breaks vote ties in favor of the newer attendee statement", () => {
+    const boardStatements = pickBoardStatements(
+      ["first", "second", "third", "fourth", "fifth", "sixth"].map((id, index) =>
+        attendeeStatement(id, { agrees: 5 }, STARTED_AT + index + 1),
+      ),
+      STARTED_AT,
+    );
+    expect(statementIds(boardStatements)).toEqual(["sixth", "fifth", "fourth", "third", "second"]);
   });
 
   it("caps the board at 7, dropping the statements from before Start with the fewest votes", () => {
