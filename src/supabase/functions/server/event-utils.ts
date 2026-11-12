@@ -11,6 +11,7 @@ import {
 } from "./kv-utils.tsx";
 import {
   loadEventStatementsAndVotes,
+  trimVotersToViewer,
 } from "./event-content-utils.ts";
 import { RouteError } from "./route-error.ts";
 import {
@@ -155,12 +156,13 @@ export interface EventPost {
 
 export const loadEventPost = async (
   roomId: string,
+  viewerId: string | undefined,
 ): Promise<EventPost> => {
   const [room, { statements }] = await Promise.all([
     getDebateOrThrow(roomId),
     loadEventStatementsAndVotes([roomId]),
   ]);
-  return { room, statements };
+  return { room, statements: trimVotersToViewer(statements, viewerId) };
 };
 
 export interface EventActionParams {

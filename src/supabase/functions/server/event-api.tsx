@@ -375,7 +375,7 @@ app.get(
     async (_params, c: Context) => {
       const roomId = c.req.param("roomId");
       if (!roomId) throw new RouteError("A post ID is required", 400);
-      return { post: await loadEventPost(roomId) };
+      return { post: await loadEventPost(roomId, c.get("userId")) };
     },
     "Failed to load the event post",
   ),
