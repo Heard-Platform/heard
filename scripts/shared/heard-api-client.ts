@@ -66,14 +66,6 @@ export class HeardApiClient {
     return this.send<{ user: UserSession }>("GET", "GET /user/me", "/user/me");
   }
 
-  loadFeed() {
-    return this.send<{ rooms: DebateRoom[] }>(
-      "POST",
-      "POST /rooms/active",
-      "/rooms/active?onlyJoined=false&includeDemographics=false",
-    );
-  }
-
   getEvent(eventId: string) {
     return this.send<{ event: Event }>("GET", "GET /event/:id", `/event/${eventId}`);
   }

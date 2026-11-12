@@ -715,15 +715,20 @@ function AppContent() {
   };
 
   const isInFlyerFlow = flyerSwipe !== null || flyerLanding !== null || newFlyerScan !== null;
+  const isOnEventScreen =
+    attendedEventId !== null ||
+    displayedEvent !== null ||
+    supportViewEvent !== null ||
+    reportEventId !== null;
 
   useEffect(() => {
-    if (!user || !hasCheckedUrl || isInFlyerFlow) return;
+    if (!user || !hasCheckedUrl || isInFlyerFlow || isOnEventScreen) return;
     if (targetRoomId) {
       loadRoomsAndResolveTarget();
     } else {
       loadActiveRooms(currentSubHeard || undefined);
     }
-  }, [user?.id, hasCheckedUrl, targetRoomId, isInFlyerFlow]);
+  }, [user?.id, hasCheckedUrl, targetRoomId, isInFlyerFlow, isOnEventScreen]);
 
   useEffect(() => {
     if (user && hasCheckedUrl && pendingCommunities.length > 0) {

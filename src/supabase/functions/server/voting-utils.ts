@@ -8,6 +8,7 @@ import type {
 } from "./types.tsx";
 import {
   findStatementInAnyRoom,
+  getVote,
   saveStatement,
   saveVote,
   getVotesForStatement,
@@ -21,7 +22,10 @@ import { maybeEmailResponseVotesNotif } from "./email-notifs-utils.ts";
 import { recomputeClustersIfNeeded } from "./cluster-freshness.ts";
 import { runInBackground } from "./background-utils.ts";
 import { checkEventVoting } from "./event-utils.ts";
-import { calculateVoteStats } from "./vote-stats-utils.ts";
+import {
+  applyVoteToStatement,
+  calculateVoteStats,
+} from "./vote-stats-utils.ts";
 
 export interface FlyerSource {
   flyerId: string;
@@ -112,6 +116,33 @@ const awardAuthorAndHostPoints = async (
 
 const NEW_VOTE_POINTS = 10;
 
+const recountStatementVotes = async (
+  statement: Statement,
+): Promise<Statement> => {
+  const voteStats = calculateVoteStats(
+    await getVotesForStatement(statement.id),
+  );
+  return {
+    ...statement,
+    agrees: voteStats.agrees,
+    disagrees: voteStats.disagrees,
+    passes: voteStats.passes,
+    superAgrees: voteStats.superAgrees,
+    voters: voteStats.voters,
+  };
+};
+
+const saveRoomActivity = async (
+  room: DebateRoom,
+  userId: string,
+  now: number,
+) => {
+  await Promise.all([
+    saveDebateRoom(room),
+    recordRoomEngagement(userId, room.id, now),
+  ]);
+};
+
 type ProcessVoteInputs = {
   statementId: string;
   userId: string;
@@ -135,9 +166,10 @@ export const processVote = async ({
     return { success: false, error: "Invalid vote type" };
   }
 
-  const [user, statement] = await Promise.all([
+  const [user, statement, currentVote] = await Promise.all([
     getUserSession(userId),
     findStatementInAnyRoom(statementId),
+    getVote(statementId, userId),
   ]);
 
   if (!user) {
@@ -156,10 +188,7 @@ export const processVote = async ({
     `Voting on statement ${statementId} by user ${userId} with vote ${voteType}`,
   );
 
-  const [room, currentVotes] = await Promise.all([
-    getDebateRoom(statement.roomId),
-    getVotesForStatement(statementId),
-  ]);
+  const room = await getDebateRoom(statement.roomId);
 
   if (!room) {
     console.error(`Debate room not found with ID: ${statement.roomId}`);
@@ -188,9 +217,9 @@ export const processVote = async ({
     );
   }
 
-  const currentVote = currentVotes.find((v) => v.userId === userId);
   const isNewVote = !currentVote;
-  const pointsEarned = isNewVote ? NEW_VOTE_POINTS : 0;
+  const isEventVote = voteSource === "event";
+  const pointsEarned = isNewVote && !isEventVote ? NEW_VOTE_POINTS : 0;
   const voteCountChange = isNewVote ? 1 : 0;
 
   const votePartial = {
@@ -207,40 +236,40 @@ export const processVote = async ({
       userId,
       ...votePartial,
     });
+  } else {
+    await saveVote({ ...currentVote, ...votePartial });
+  }
+
+  if (isNewVote && !isEventVote) {
     runInBackground(
       awardAuthorAndHostPoints(statement, room, userId),
       `author and host points for statement ${statementId}`,
     );
-  } else {
-    await saveVote({ ...currentVote, ...votePartial });
   }
 
   const now = Date.now();
   room.lastActivityAt = now;
   room.totalVotes = (room.totalVotes || 0) + voteCountChange;
+  runInBackground(
+    saveRoomActivity(room, userId, now),
+    `room activity for room ${statement.roomId}`,
+  );
 
-  const [updatedVotes] = await Promise.all([
-    getVotesForStatement(statementId),
-    saveDebateRoom(room),
-    recordRoomEngagement(userId, statement.roomId, now),
-  ]);
-  const voteStats = calculateVoteStats(updatedVotes);
-
-  const updatedStatement = {
-    ...statement,
-    agrees: voteStats.agrees,
-    disagrees: voteStats.disagrees,
-    passes: voteStats.passes,
-    superAgrees: voteStats.superAgrees,
-    voters: voteStats.voters,
-  };
+  const updatedStatement = isEventVote
+    ? applyVoteToStatement(
+      statement,
+      userId,
+      currentVote?.voteType ?? null,
+      voteType,
+    )
+    : await recountStatementVotes(statement);
 
   if (pointsEarned > 0) {
     user.score += pointsEarned;
   }
 
   await Promise.all([
-    saveStatement(updatedStatement),
+    isEventVote ? Promise.resolve() : saveStatement(updatedStatement),
     pointsEarned > 0 ? saveUser(user) : Promise.resolve(),
   ]);
 
@@ -249,16 +278,18 @@ export const processVote = async ({
     `cluster freshness check for room ${statement.roomId}`,
   );
 
-  runInBackground(
-    maybeEmailResponseVotesNotif(
-      updatedStatement,
-      statement.agrees + statement.disagrees,
-    ),
-    `response votes notif for statement ${statementId}`,
-  );
+  if (!isEventVote) {
+    runInBackground(
+      maybeEmailResponseVotesNotif(
+        updatedStatement,
+        statement.agrees + statement.disagrees,
+      ),
+      `response votes notif for statement ${statementId}`,
+    );
+  }
 
   console.log(
-    `Final vote count for statement ${statementId}: ${voteStats.agrees} agree, ${voteStats.disagrees} disagree, ${voteStats.passes} pass (${updatedVotes.length} total votes)`,
+    `Final vote count for statement ${statementId}: ${updatedStatement.agrees} agree, ${updatedStatement.disagrees} disagree, ${updatedStatement.passes} pass`,
   );
 
   return {
@@ -266,6 +297,6 @@ export const processVote = async ({
     statement: updatedStatement,
     user,
     pointsEarned,
-    userVote: voteStats.voters[userId] || null,
+    userVote: voteType,
   };
 };
