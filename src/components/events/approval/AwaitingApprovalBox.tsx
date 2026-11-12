@@ -82,19 +82,22 @@ export function AwaitingApprovalBox({
           Waiting for approval · {awaitingApprovalCount}
         </h3>
         <div className="flex items-center gap-3">
-          {sectionCount > 1 && (
-            <PinnedSectionSelect
-              sectionCount={sectionCount}
-              pinnedSectionNumber={shownPinnedSectionNumber}
-              onPinnedSectionChange={handlePinnedSectionChange}
-            />
-          )}
+          <PinnedSectionSelect
+            sectionCount={sectionCount}
+            pinnedSectionNumber={shownPinnedSectionNumber}
+            onPinnedSectionChange={handlePinnedSectionChange}
+          />
           <SectionCountSelect
             sectionCount={sectionCount}
             onSectionCountChange={handleSectionCountChange}
           />
         </div>
       </div>
+      {sectionCount === 1 && awaitingApprovalCount === 0 && (
+        <div className="py-3">
+          <SupportNote>Nothing waiting for approval.</SupportNote>
+        </div>
+      )}
       {sectionCount === 1 ? (
         <AwaitingApprovalList
           awaitingApprovalStatements={approvalSections[0]}
