@@ -67,6 +67,8 @@ import type { FlyerVoteTally } from "./components/flyer/landing/FlyerLandingScre
 import type { FlyerVote } from "./components/flyer/FlyerVoteIntroCard";
 import { FeatureFlags, isFeatureEnabled } from "./utils/constants/feature-flags";
 import {
+  GU_SHARING_ROOM_ID,
+  GU_SHARING_STATEMENT_ID,
   ROOM_SHORT_ROUTES,
   WAYMO_DC_ROOM_ID,
   WAYMO_DC_STATEMENT_ID,
@@ -98,7 +100,7 @@ const showsEventFlyerFlow = (room: DebateRoom) =>
 
 const HARDCODED_FLYER_ROUTES: Record<string, { flyerId: string; statementId: string }> = {
   shirt: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
-  sign: { flyerId: WAYMO_DC_ROOM_ID, statementId: WAYMO_DC_STATEMENT_ID },
+  sign: { flyerId: GU_SHARING_ROOM_ID, statementId: GU_SHARING_STATEMENT_ID },
   card: { flyerId: I_LOVE_CIVTECH_FLYER_ID, statementId: I_LOVE_CIVTECH_STATEMENT_ID },
   banner: { flyerId: CANDY_CORN_ROOM_ID, statementId: CANDY_CORN_STMT_ID },
 };

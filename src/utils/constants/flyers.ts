@@ -2,6 +2,7 @@ export const WAYMO_DC_ROOM_ID = "s6r23ralcomq8l9p6p";
 export const WAYMO_DC_STATEMENT_ID = "ecgld4qfclqmq8l9p82";
 
 export const GU_SHARING_ROOM_ID = "lr1lbfl6anmw8dcfv4";
+export const GU_SHARING_STATEMENT_ID = "tgfe6xzot2cmw8dcfxge";
 export const GU_ACTIVISM_ROOM_ID = "lr1lbfl6anmw8dcfv4";
 export const GU_US_ROOM_ID = "de6ter1pvhnmw8dcf5e";
 export const GU_FRIEND_ROOM_ID = "lr1lbfl6anmw8dcfv4";
