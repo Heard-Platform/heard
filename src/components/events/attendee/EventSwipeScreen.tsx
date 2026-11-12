@@ -35,7 +35,7 @@ export function EventSwipeScreen({
         onVote={(item, vote) => onVote(item.statement, vote)}
         onSuperAgree={canSuperAgree ? handleSuperAgree : undefined}
       />
-      <div className="mt-auto pt-5">
+      <div className="pt-5">
         <AddStatementField onAddStatement={onAddStatement} />
       </div>
     </AttendeeFrame>
