@@ -122,6 +122,12 @@ export const parseSupportViewEventIdFromUrl = (): string | null => {
   return match ? match[1] : null
 }
 
+export const parseApprovalEventIdFromUrl = (): string | null => {
+  if (typeof window === 'undefined') return null
+  const match = window.location.pathname.match(/^\/event\/([^/]+)\/approve\/?$/)
+  return match ? match[1] : null
+}
+
 export const parseAttendedEventIdFromUrl = (): string | null => {
   if (typeof window === 'undefined') return null
   const match = window.location.pathname.match(/^\/event\/([^/]+)\/live\/?$/)
@@ -162,6 +168,9 @@ export const createEventDisplayLink = (eventId: string, displayKey: string): str
 
 export const createEventSupportViewLink = (eventId: string, displayKey: string): string =>
   createParamUrl(`/event/${eventId}/support`, { displayKey })
+
+export const createEventApprovalLink = (eventId: string, displayKey: string): string =>
+  createParamUrl(`/event/${eventId}/approve`, { displayKey })
 
 export interface EventJoinLink {
   url: string;
