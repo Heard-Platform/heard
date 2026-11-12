@@ -22,11 +22,10 @@ interface EventDisplayContainerProps {
 }
 
 export function EventDisplayContainer({ eventId, displayKey }: EventDisplayContainerProps) {
-  const { eventState, error, refresh, applyEventState } = useEventPolling(
-    eventId,
-    true,
-    DISPLAY_POLL_MS,
-  );
+  const { eventState, error, refresh, applyEventState } = useEventPolling(eventId, {
+    includesHeadcount: true,
+    intervalMs: DISPLAY_POLL_MS,
+  });
   const { isBusy, runAction } = useEventAction({ eventId, displayKey, eventState, applyEventState, refresh });
   const post = useEventPostRefreshedEvery(eventState?.currentRoomId ?? null, DISPLAY_POLL_MS);
   useReloadOnNonceChange(eventState?.reloadNonce);
@@ -89,8 +88,13 @@ export function EventDisplayContainer({ eventId, displayKey }: EventDisplayConta
 }
 
 function useEventPostRefreshedEvery(currentRoomId: string | null, refreshIntervalMs: number): EventPost | null {
-  const { post, refresh } = useEventPost(currentRoomId);
-  usePolling(refresh, refreshIntervalMs, currentRoomId !== null);
+  const { post, refresh } = useEventPost(currentRoomId, {
+    includesVoteCounts: true,
+  });
+  usePolling(refresh, {
+    intervalMs: refreshIntervalMs,
+    isEnabled: currentRoomId !== null,
+  });
   return post;
 }
 
@@ -122,7 +126,10 @@ function useBreakdownRefreshing(
     if (!isShowing) setQuestions(null);
   }, [isShowing]);
 
-  usePolling(refreshQuestions, refreshIntervalMs, isShowing);
+  usePolling(refreshQuestions, {
+    intervalMs: refreshIntervalMs,
+    isEnabled: isShowing,
+  });
 
   return questions;
 }

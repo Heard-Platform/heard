@@ -2,6 +2,7 @@ import _ from "lodash";
 import {
   getStatementsForRoom,
   getStatementsForRoomIncludingHidden,
+  getVotesOfUserOnStatements,
   getVotesForStatement,
 } from "./kv-utils.tsx";
 import { getMergesForRoom } from "./model-utils.ts";
@@ -37,6 +38,45 @@ export const trimVotersToViewer = (
     ...statement,
     voters: reduceToViewerVotes(statement.voters, viewerId),
   }));
+
+export const setVotersToViewerEventVotes = (
+  statements: Statement[],
+  viewerVotes: Pick<Vote, "statementId" | "voteType" | "source">[],
+  viewerId: string | undefined,
+): Statement[] => {
+  const viewerVoteTypeByStatementId = new Map(
+    viewerVotes
+      .filter(isEventVote)
+      .map((vote) => [vote.statementId, vote.voteType]),
+  );
+  return statements.map((statement) => {
+    const viewerVoteType = viewerVoteTypeByStatementId.get(statement.id);
+    const voters: Statement["voters"] =
+      viewerId && viewerVoteType ? { [viewerId]: viewerVoteType } : {};
+    return { ...statement, voters };
+  });
+};
+
+export const loadEventStatementsForViewer = async (
+  roomId: string,
+  viewerId: string | undefined,
+): Promise<Statement[]> => {
+  const [roomStatements, merges] = await Promise.all([
+    getStatementsForRoom(roomId),
+    getMergesForRoom(roomId),
+  ]);
+  const statements = roomStatements.filter(isEventStatement);
+  const viewerVotes = viewerId
+    ? await getVotesOfUserOnStatements(
+      viewerId,
+      statements.map((statement) => statement.id),
+    )
+    : [];
+  return applyStatementMerges(
+    setVotersToViewerEventVotes(statements, viewerVotes, viewerId),
+    merges,
+  );
+};
 
 export const updateVoteCounts = (
   statements: Statement[],

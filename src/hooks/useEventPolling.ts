@@ -9,11 +9,19 @@ import {
 import type { LiveEventView, LiveHeartbeat } from "../types";
 import { usePolling } from "./usePolling";
 
+export interface EventPollingOptions {
+  includesHeadcount: boolean;
+  intervalMs?: number;
+  getHeartbeat?: () => LiveHeartbeat | null;
+}
+
 export function useEventPolling(
   eventId: string,
-  includesHeadcount: boolean,
-  intervalMs: number = EVENT_POLL_MS,
-  getHeartbeat?: () => LiveHeartbeat | null,
+  {
+    includesHeadcount,
+    intervalMs = EVENT_POLL_MS,
+    getHeartbeat,
+  }: EventPollingOptions,
 ) {
   const [eventState, setEventState] = useState<LiveEventView | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -34,11 +42,10 @@ export function useEventPolling(
   }, []);
 
   const refresh = useCallback(async (): Promise<boolean> => {
-    const response = await api.getLiveEvent(
-      eventId,
+    const response = await api.getLiveEvent(eventId, {
       includesHeadcount,
-      nextHeartbeat(),
-    );
+      heartbeat: nextHeartbeat(),
+    });
     if (response.success && response.data) {
       setError(null);
       applyEventState(response.data.live);
@@ -48,7 +55,7 @@ export function useEventPolling(
     return false;
   }, [eventId, includesHeadcount, applyEventState]);
 
-  usePolling(refresh, intervalMs, true);
+  usePolling(refresh, { intervalMs });
 
   return { eventState, error, refresh, applyEventState };
 }

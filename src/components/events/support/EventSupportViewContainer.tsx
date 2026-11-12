@@ -62,7 +62,7 @@ function useSupportViewStats(eventId: string, displayKey: string | null) {
     return false;
   }, [eventId, displayKey]);
 
-  usePolling(refresh, SUPPORT_VIEW_POLL_MS, true);
+  usePolling(refresh, { intervalMs: SUPPORT_VIEW_POLL_MS });
 
   return { stats, error };
 }

@@ -273,12 +273,9 @@ app.get(
       ]);
       const state = eventStateOrDefault(stored, now);
       return {
-        live: await loadEventView(
-          eventId,
-          state,
-          now,
-          includesHeadcount === "true",
-        ),
+        live: await loadEventView(eventId, state, now, {
+          includesHeadcount: includesHeadcount === "true",
+        }),
       };
     },
     "Failed to fetch live event",
@@ -339,7 +336,11 @@ app.post(
       const next = await applyEventAction(eventId, state, action, { roomOrder, fromIndex }, now);
 
       await saveLiveEventState(eventId, next);
-      return { live: await loadEventView(eventId, next, now, true) };
+      return {
+        live: await loadEventView(eventId, next, now, {
+          includesHeadcount: true,
+        }),
+      };
     },
     "Failed to update live event",
   ),
@@ -410,11 +411,23 @@ app.get(
 app.get(
   "/make-server-f1a393b4/event-post/:roomId",
   defineRoute(
-    {},
-    async (_params, c: Context) => {
+    {
+      includesVoteCounts: {
+        type: "string",
+        required: false,
+      },
+    },
+    async (
+      { includesVoteCounts }: { includesVoteCounts?: string },
+      c: Context,
+    ) => {
       const roomId = c.req.param("roomId");
       if (!roomId) throw new RouteError("A post ID is required", 400);
-      return { post: await loadEventPost(roomId, c.get("userId")) };
+      return {
+        post: await loadEventPost(roomId, c.get("userId"), {
+          includesVoteCounts: includesVoteCounts !== "false",
+        }),
+      };
     },
     "Failed to load the event post",
   ),

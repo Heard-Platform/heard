@@ -122,7 +122,7 @@ export class HeardApiClient {
   getEventPost(roomId: string) {
     return this.sendPoll<{ post: EventPost }>(
       "GET /event-post/:roomId",
-      `/event-post/${roomId}`,
+      `/event-post/${roomId}?includesVoteCounts=false`,
     );
   }
 
