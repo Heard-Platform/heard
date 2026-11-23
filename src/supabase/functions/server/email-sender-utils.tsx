@@ -1,3 +1,4 @@
+import { getResendApiKeyOnlyInProd } from "./environment-utils.ts";
 import { getAllRealUsers, getSentEmails } from "./kv-utils.tsx";
 import { User } from "./types.tsx";
 import { hasSentEmail, recordSentEmail } from "./model-utils.ts";
@@ -32,7 +33,7 @@ export const getUnsubscribeHeaders = (userId: string): Record<string, string> =>
 export const sendEmailViaResend = async (
   params: SendEmailParams,
 ): Promise<SendEmailResult> => {
-  const resendApiKey = Deno.env.get("RESEND_API_KEY");
+  const resendApiKey = getResendApiKeyOnlyInProd();
   if (!resendApiKey) {
     return {
       success: false,

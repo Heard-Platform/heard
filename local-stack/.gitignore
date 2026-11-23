@@ -1,0 +1,5 @@
+functions.env
+supabase/.temp/
+supabase/.branches/
+supabase/snippets/
+supabase/functions/

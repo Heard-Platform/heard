@@ -24,6 +24,7 @@
   "exclude": [
     "src/components/ui",
     "netlify/edge-functions",
-    "src/supabase/functions"
+    "src/supabase/functions",
+    "local-stack"
   ]
 }

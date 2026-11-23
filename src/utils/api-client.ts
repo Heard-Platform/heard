@@ -5,7 +5,10 @@ import { getSessionDiagnostics, getSessionId } from "./session-store";
 import { projectId, publicAnonKey } from "./supabase/info";
 import type { UserSession } from "../types";
 
-export const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-f1a393b4`;
+const hostedSupabaseApiBaseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-f1a393b4`;
+
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || hostedSupabaseApiBaseUrl;
 
 export interface ApiResponse<T = undefined> {
   success: boolean;
