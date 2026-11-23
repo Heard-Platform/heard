@@ -91,6 +91,7 @@
     },
     "scripts": {
         "dev": "vite",
+        "dev:prod": "vite --mode prod",
         "build": "vite build",
         "storybook": "storybook dev -p 6006",
         "test": "vitest run",

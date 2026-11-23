@@ -9,9 +9,8 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { projectId, publicAnonKey } from "../utils/supabase/info";
-
-const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-f1a393b4`;
+import { publicAnonKey } from "../utils/supabase/info";
+import { API_BASE_URL } from "../utils/api-client";
 
 interface AiUsageData {
   timeline: Array<{ date: string; [endpoint: string]: number | string }>;

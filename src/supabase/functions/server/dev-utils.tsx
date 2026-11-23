@@ -1,3 +1,4 @@
+import { getResendApiKeyOnlyInProd } from "./environment-utils.ts";
 import { getDevUsers } from "./kv-utils.tsx";
 import { escapeHtml } from "./utils.tsx";
 
@@ -81,7 +82,7 @@ interface SendEmailToDevsOptions {
 }
 
 export async function sendEmailToDevs({ from, subject, html }: SendEmailToDevsOptions): Promise<void> {
-  const resendApiKey = Deno.env.get("RESEND_API_KEY");
+  const resendApiKey = getResendApiKeyOnlyInProd();
   
   if (!resendApiKey) {
     console.error("RESEND_API_KEY not found in environment variables");

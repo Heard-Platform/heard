@@ -1,3 +1,4 @@
+import { getResendApiKeyOnlyInProd } from "./environment-utils.ts";
 import { Hono } from "npm:hono@4";
 import { cors } from "npm:hono/cors";
 import { generateRealEmailData, hasEmailContent } from "./email-digest-data-generator.tsx";
@@ -40,7 +41,7 @@ app.post(
 
       console.log("[digest-orchestrator] Starting email digest orchestration");
 
-      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      const resendApiKey = getResendApiKeyOnlyInProd();
       if (!resendApiKey) {
         console.log("[digest-orchestrator] RESEND_API_KEY not configured");
         return c.json({ error: "Email service not configured" }, 500);

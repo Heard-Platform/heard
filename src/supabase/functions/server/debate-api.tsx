@@ -1,3 +1,4 @@
+import { getResendApiKeyOnlyInProd } from "./environment-utils.ts";
 // @ts-ignore
 import { Context, Hono } from "npm:hono";
 import {
@@ -73,7 +74,7 @@ const sendEmail = async (params: {
   text?: string;
 }) => {
   try {
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    const resendApiKey = getResendApiKeyOnlyInProd();
 
     if (!resendApiKey) {
       console.error("RESEND_API_KEY not found in environment");
@@ -1067,7 +1068,7 @@ app.post(
         return c.json({ error: "Room is not active" }, 400);
       }
 
-      const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+      const RESEND_API_KEY = getResendApiKeyOnlyInProd();
       if (!RESEND_API_KEY) {
         console.error("RESEND_API_KEY not configured");
         return c.json(

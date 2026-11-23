@@ -1,3 +1,4 @@
+import { getResendApiKeyOnlyInProd } from "./environment-utils.ts";
 import { sanitizeUser } from "./user-utils.ts";
 import { getActiveRooms } from "./debate-api.tsx";
 import {
@@ -572,7 +573,7 @@ app.post(
     try {
       const { testMode, testEmail, newsletterEdition } = await c.req.json();
 
-      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      const resendApiKey = getResendApiKeyOnlyInProd();
       if (!resendApiKey) {
         return c.json(
           { error: "RESEND_API_KEY not configured" },

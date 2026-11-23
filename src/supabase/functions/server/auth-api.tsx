@@ -5,6 +5,10 @@ import { getMagicLinkEmail } from "./email-templates.tsx";
 import { loginUserWithMerge, validateSession } from "./auth-utils.ts";
 import { sanitizeUser } from "./user-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
+import {
+  getResendApiKeyOnlyInProd,
+  isRunningInProd,
+} from "./environment-utils.ts";
 import { isValidEmail } from "./validation-utils.ts";
 import { insertAnalyticsEvent } from "./model-utils.ts";
 import { sendMaxOnce } from "./email-sender-utils.tsx";
@@ -303,7 +307,14 @@ const sendMagicLinkToEmail = async (email: string): Promise<void> => {
     expiresAt,
   });
 
-  const resendApiKey = Deno.env.get("RESEND_API_KEY");
+  if (!isRunningInProd()) {
+    console.log(
+      `Non-production magic link code for ${normalizedEmail}: ${token}`,
+    );
+    return;
+  }
+
+  const resendApiKey = getResendApiKeyOnlyInProd();
   if (!resendApiKey) {
     throw new Error("Email service not configured");
   }

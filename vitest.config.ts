@@ -5,6 +5,12 @@ import { defineConfig } from "vitest/config";
 // via `npm run test:server` (deno test); script tests via `npm run test:scripts`.
 export default defineConfig({
   test: {
-    exclude: ["src/supabase/**", "scripts/**", "node_modules/**", "dist/**"],
+    exclude: [
+      "src/supabase/**",
+      "local-stack/**",
+      "scripts/**",
+      "node_modules/**",
+      "dist/**",
+    ],
   },
 });

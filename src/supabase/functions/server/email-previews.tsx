@@ -1,3 +1,4 @@
+import { getResendApiKeyOnlyInProd } from "./environment-utils.ts";
 import { Context, Hono } from "npm:hono@4";
 import * as kvUtils from "./kv-utils.tsx";
 import { generateRealEmailData, hasEmailContent } from "./email-digest-data-generator.tsx";
@@ -198,7 +199,7 @@ app.post(
         );
       }
 
-      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      const resendApiKey = getResendApiKeyOnlyInProd();
       if (!resendApiKey) {
         console.log(
           "Error sending test email: RESEND_API_KEY not configured",

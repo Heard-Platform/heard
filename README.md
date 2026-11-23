@@ -7,7 +7,9 @@
 
   Run `npm i` to install the dependencies.
 
-  Run `npm run dev` to start the development server.
+  Run `npm run dev` to start the development server against the local Supabase stack. It needs the stack running (`supabase start --workdir local-stack -x logflare,vector`) and the edge function served (`./serve-edge-function-locally.sh`).
+
+  Run `npm run dev:prod` to start the development server against production.
 
   ## Environment variables
 

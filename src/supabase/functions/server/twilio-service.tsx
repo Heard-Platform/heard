@@ -1,11 +1,15 @@
 import twilio from "npm:twilio";
 import { normalizePhoneNumber } from "./auth-utils.ts";
+import { isRunningInProd } from "./environment-utils.ts";
 
 const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
 const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
 const TWILIO_VERIFY_SERVICE_SID = Deno.env.get("TWILIO_VERIFY_SERVICE_SID");
 
 const getClient = () => {
+  if (!isRunningInProd()) {
+    return null;
+  }
   if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN) {
     return null;
   }
