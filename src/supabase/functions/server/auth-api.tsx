@@ -1,4 +1,4 @@
-import { deleteMagicLink, getEmailLoginLink, getMagicLink, getParsedKvData, getSession, getUser, saveMagicLink, saveSession, saveUserWithEmailIndex, getUserIdByEmail, getVote } from "./kv-utils.tsx";
+import { deleteMagicLink, getEmailLoginLink, getMagicLink, getParsedKvData, getSession, getUser, saveMagicLink, saveSession, saveUserWithEmailIndex, getUserIdByEmail } from "./kv-utils.tsx";
 import type { Session, User } from "./types.tsx";
 import { Context, Hono } from "npm:hono";
 import { getMagicLinkEmail } from "./email-templates.tsx";
@@ -10,7 +10,7 @@ import {
   isRunningInProd,
 } from "./environment-utils.ts";
 import { isValidEmail } from "./validation-utils.ts";
-import { insertAnalyticsEvent } from "./model-utils.ts";
+import { insertAnalyticsEvent, getVote } from "./model-utils.ts";
 import { sendMaxOnce } from "./email-sender-utils.tsx";
 import { sendFlyerResultsEmail, sendFlyerResultsEmailIfFlyerVoter, WAYMO_FLYER_STATEMENT_ID } from "./service-flyer-results-email.ts";
 import {

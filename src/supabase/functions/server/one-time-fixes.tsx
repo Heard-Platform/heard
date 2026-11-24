@@ -1,8 +1,8 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
-import { getByPrefixParsed, getActiveRoomValues, saveActiveRoomPointer, saveDebate, getMembership, saveMembership, deleteMembership, getStatementsForRoomIncludingHidden, getVotesForStatement, deleteVote } from "./kv-utils.tsx";
+import { getByPrefixParsed, getActiveRoomValues, saveActiveRoomPointer, saveDebate, getMembership, saveMembership, deleteMembership, getStatementsForRoomIncludingHidden } from "./kv-utils.tsx";
 import { getAllRecords } from "./db-utils.ts";
-import { getDemographicQuestionsForRoom, insertDemographicQuestion } from "./model-utils.ts";
+import { getDemographicQuestionsForRoom, insertDemographicQuestion, getVotesForStatement, deleteVote } from "./model-utils.ts";
 import { CommunityMembership, DemographicQuestion } from "./types.tsx";
 import { backfillUserCreatedAtApi } from "./backfill-user-created-at.tsx";
 import { backfillMembershipsApi } from "./script-backfill-memberships.tsx";

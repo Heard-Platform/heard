@@ -1,6 +1,7 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
-import { getAllStatements, getAllUsers, getAllVotes, saveUser } from "./kv-utils.tsx";
+import { getAllStatements, getAllUsers, saveUser } from "./kv-utils.tsx";
+import { getAllVotes } from "./model-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 
 const app = new Hono();

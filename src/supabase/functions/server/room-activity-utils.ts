@@ -1,5 +1,6 @@
 import type { Vote } from "./types.tsx";
-import { getDevUsers, getStatementsForRoomIncludingHidden, getVotesForStatement } from "./kv-utils.tsx";
+import { getDevUsers, getStatementsForRoomIncludingHidden } from "./kv-utils.tsx";
+import { getVotesForStatement } from "./model-utils.ts";
 import { median } from "./stats-utils.ts";
 
 export interface RoomVoteDepthBucket {

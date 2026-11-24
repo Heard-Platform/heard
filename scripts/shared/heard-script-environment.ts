@@ -5,6 +5,7 @@ const SERVER_FUNCTION_NAME = "make-server-f1a393b4";
 
 export const MODERATOR_SESSION_VARIABLE = "HEARD_MODERATOR_SESSION_ID";
 export const SERVICE_ROLE_KEY_VARIABLE = "SUPABASE_SERVICE_ROLE_KEY";
+export const SUPABASE_URL_VARIABLE = "SUPABASE_URL";
 
 export interface HeardScriptEnvironment {
   apiBaseUrl: string;
@@ -31,14 +32,19 @@ export async function loadDatabaseEnvironment(): Promise<
 export function buildDatabaseEnvironment(
   variables: Record<string, string>,
 ): DatabaseEnvironment {
+  return {
+    supabaseUrl: variables[SUPABASE_URL_VARIABLE]?.trim() ||
+      buildProjectUrl(variables),
+    serviceRoleKey: requireServiceRoleKey(variables),
+  };
+}
+
+function buildProjectUrl(variables: Record<string, string>): string {
   const projectId = requireVariable(
     variables,
     "VITE_SUPABASE_PROJECT_ID",
   );
-  return {
-    supabaseUrl: `https://${projectId}.supabase.co`,
-    serviceRoleKey: requireServiceRoleKey(variables),
-  };
+  return `https://${projectId}.supabase.co`;
 }
 
 function requireServiceRoleKey(

@@ -1,5 +1,6 @@
 import { selectAll } from "./db-utils.ts";
-import { getStatementsForRoomIncludingHidden, getUser, getVotesForStatement } from "./kv-utils.tsx";
+import { getStatementsForRoomIncludingHidden, getUser } from "./kv-utils.tsx";
+import { getVotesForStatement } from "./model-utils.ts";
 import { REFERRAL_EVENT_TYPES } from "./room-attribution-utils.ts";
 import { getRoomParticipants } from "./room-utils.ts";
 import { DebateRoom, RoomView, UserEvent, VoteType } from "./types.tsx";

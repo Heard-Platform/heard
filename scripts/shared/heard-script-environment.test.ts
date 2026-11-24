@@ -6,6 +6,7 @@ import {
   MODERATOR_SESSION_VARIABLE,
   requireModeratorSessionId,
   SERVICE_ROLE_KEY_VARIABLE,
+  SUPABASE_URL_VARIABLE,
 } from "./heard-script-environment.ts";
 
 const viteVariables = {
@@ -57,6 +58,19 @@ Deno.test("buildDatabaseEnvironment builds the project URL", () => {
     {
       supabaseUrl: "https://project.supabase.co",
       serviceRoleKey: "service-key",
+    },
+  );
+});
+
+Deno.test("buildDatabaseEnvironment uses SUPABASE_URL when set", () => {
+  assertEquals(
+    buildDatabaseEnvironment({
+      [SUPABASE_URL_VARIABLE]: "http://127.0.0.1:54321",
+      [SERVICE_ROLE_KEY_VARIABLE]: "local-service-key",
+    }),
+    {
+      supabaseUrl: "http://127.0.0.1:54321",
+      serviceRoleKey: "local-service-key",
     },
   );
 });

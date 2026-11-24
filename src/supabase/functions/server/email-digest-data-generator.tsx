@@ -1,6 +1,7 @@
 import { getStatementsForUser } from "./db-utils.ts";
 import { EmailData, SubHeardMembership } from "./email-types.ts";
-import { getAllDebates, getByPrefixParsed, findStatementInAnyRoom, getStatementsForRoom, getVotesForUser } from "./kv-utils.tsx";
+import { getAllDebates, getByPrefixParsed, findStatementInAnyRoom, getStatementsForRoom } from "./kv-utils.tsx";
+import { getVotesForUser } from "./model-utils.ts";
 import type { Statement, DebateRoom } from "./types.tsx";
 
 async function getConversationsStarted(

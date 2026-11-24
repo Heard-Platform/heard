@@ -3,11 +3,9 @@ import { getResendApiKeyOnlyInProd } from "./environment-utils.ts";
 import { Context, Hono } from "npm:hono";
 import {
   saveStatement, getDebate, saveDebate,
-  saveVote,
   getAllDebates,
   saveChanceCardStatus,
   getUsersChanceCardStatuses, getUsersYouTubeCardStatuses,
-  getVotesForStatement,
   getCommunities,
   getCommunity,
   getStatementsForRoom,
@@ -32,6 +30,8 @@ import {
   getCoverCardSwipedRoomIds,
   getMergesForRoom,
   recordRoomEngagement,
+  getVotesForStatement,
+  saveVote,
 } from "./model-utils.ts";
 import type {
   User, Statement,
@@ -1523,8 +1523,9 @@ app.post(
             statementId: statement.id,
             userId: voterId,
             voteType,
-            timestamp:
-              statement.timestamp + Math.random() * 10000, // Slightly randomize vote times
+            timestamp: Math.floor(
+              statement.timestamp + Math.random() * 10000,
+            ), // Slightly randomize vote times
           };
           await saveVote(vote);
         }

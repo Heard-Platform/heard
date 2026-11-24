@@ -1,8 +1,8 @@
-import { filterVisibleStatements, findStatementInAnyRoom, getUser, getVote, getVotesForStatement } from "./kv-utils.tsx";
+import { filterVisibleStatements, findStatementInAnyRoom, getUser } from "./kv-utils.tsx";
 import { getUsableStatementsForRoom } from "./room-utils.ts";
 import { getOpinionatedVoteCount } from "./statement-utils.tsx";
 import { getUnsubscribeHeaders, isEligibleEmailRecipient, sendEmailViaResend, sendMaxOnce, type SendEmailParams } from "./email-sender-utils.tsx";
-import { hasSentEmail } from "./model-utils.ts";
+import { hasSentEmail, getVote, getVotesForStatement } from "./model-utils.ts";
 import { getLatestResultsTime } from "./flyer-results-time.ts";
 import { ONE_DAY_MS } from "./time-utils.ts";
 import { createEmailLoginToken } from "./email-login-links.ts";

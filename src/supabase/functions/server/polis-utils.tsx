@@ -12,8 +12,8 @@ import {
   createRoom,
   statementKeyFn,
   userKeyFn,
-  voteKeyFn,
 } from "./kv-utils.tsx";
+import { bulkSaveVotes } from "./model-utils.ts";
 
 export type PolisStatement = {
   authorId: number;
@@ -354,7 +354,7 @@ export async function importAllData(
   await bulkUpsert(data.statements, statementKeyFn);
 
   console.log(`Bulk upserting ${data.votes.length} votes`);
-  await bulkUpsert(data.votes, voteKeyFn);
+  await bulkSaveVotes(data.votes);
 
   console.log(
     `Imported ${data.users.length} users, ${data.statements.length} statements, ${data.votes.length} votes`,

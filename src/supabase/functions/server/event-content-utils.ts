@@ -2,10 +2,8 @@ import _ from "lodash";
 import {
   getStatementsForRoom,
   getStatementsForRoomIncludingHidden,
-  getVotesOfUserOnStatements,
-  getVotesForStatement,
 } from "./kv-utils.tsx";
-import { getMergesForRoom } from "./model-utils.ts";
+import { getMergesForRoom, getVotesOfUserOnStatements, getVotesForStatement } from "./model-utils.ts";
 import { applyStatementMerges } from "./room-utils.ts";
 import { calculateVoteStats } from "./vote-stats-utils.ts";
 import type {

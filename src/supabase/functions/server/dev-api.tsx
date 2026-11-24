@@ -17,14 +17,13 @@ import { API_URL_PREFIX } from "./constants.tsx";
 import {
   getAllDebates,
   getAllRealUsers,
-  getAllVotes,
   getDebate,
   userKeyFn,
   membershipKeyFn,
   statementKeyFn,
-  voteKeyFn,
   parallelBulkUpsert,
 } from "./kv-utils.tsx";
+import { getAllVotes, bulkSaveVotes } from "./model-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";
 import { getReferralEventSummary } from "./room-attribution-utils.ts";
 import { computeAndGetSessions } from "./session-utils.ts";
@@ -466,7 +465,7 @@ app.post(
       }
 
       await parallelBulkUpsert(statements, statementKeyFn);
-      await parallelBulkUpsert(votes, voteKeyFn);
+      await bulkSaveVotes(votes);
 
       return c.json({
         success: true,

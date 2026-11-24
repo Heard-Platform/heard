@@ -6,7 +6,6 @@ import type { ClusterRecomputeMarker } from "./cluster-freshness.ts";
 import type { Newsletter } from "./newsletter-builder-utils.ts";
 import {
   type User,
-  type Vote,
   type Statement,
   type DebateRoom,
   type SentEmail,
@@ -354,58 +353,6 @@ export const saveMembership = async (membership: CommunityMembership) => {
 export const deleteMembership = async (userId: string, subHeardName: string) => {
   const membershipKey = membershipKeyFn(userId, subHeardName);
   await kv.del(membershipKey);
-};
-
-export const voteKeyFn = (vote: Vote) =>
-  `vote:${vote.statementId}:${vote.userId}`;
-
-export const getVote = async (
-  statementId: string,
-  userId: string,
-): Promise<Vote | null> => {
-  return getParsedKvData<Vote>(`vote:${statementId}:${userId}`);
-};
-
-export const getVotesOfUserOnStatements = async (
-  userId: string,
-  statementIds: string[],
-): Promise<Vote[]> => {
-  if (statementIds.length === 0) return [];
-  const voteValues = await kv.mget(
-    statementIds.map((statementId) => `vote:${statementId}:${userId}`),
-  );
-  return parseKvDataArray<Vote>(voteValues);
-};
-
-export const getAllVotes = async (): Promise<Vote[]> => {
-  return getAllRecords<Vote>("vote:");
-};
-
-export const getVotesForUser = async (
-  userId: string,
-): Promise<Vote[]> => {
-  return getAllRecords<Vote>(`vote:%:${userId}`);
-};
-
-export const getVotesForStatement = async (
-  statementId: string,
-): Promise<Vote[]> => {
-  return getByPrefixParsed<Vote>(`vote:${statementId}:`);
-};
-
-export const saveVote = async (vote: Vote) => {
-  await kv.set(voteKeyFn(vote), JSON.stringify(vote));
-};
-
-export const bulkSaveVotes = async (votes: Vote[]) => {
-  await bulkUpsert(votes, voteKeyFn);
-};
-
-export const deleteVote = async (
-  statementId: string,
-  userId: string,
-) => {
-  await kv.del(`vote:${statementId}:${userId}`);
 };
 
 export const statementKeyFn = (statement: Statement) =>
