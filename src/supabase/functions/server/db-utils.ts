@@ -1,9 +1,11 @@
+import _ from "lodash";
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import type { SupabaseClient } from "jsr:@supabase/supabase-js@2.49.8";
 import { Statement } from "./types.tsx";
 import { parseKvDataArray } from "./kv-utils.tsx";
 
 export const TABLE_NAME = "kv_store_f1a393b4";
+const UPSERT_BATCH_SIZE = 500;
 
 export const createClientFromEnv = (): SupabaseClient =>
   createClient(
@@ -38,6 +40,22 @@ export const insertMany = async (
   if (error) {
     console.error(`Error inserting into ${tableName} table:`, error);
     throw new Error(error.message);
+  }
+};
+
+export const upsertMany = async (
+  tableName: string,
+  rows: Record<string, any>[],
+  onConflictFields: string,
+): Promise<void> => {
+  for (const batch of _.chunk(rows, UPSERT_BATCH_SIZE)) {
+    const { error } = await createClientFromEnv()
+      .from(tableName)
+      .upsert(batch, { onConflict: onConflictFields });
+    if (error) {
+      console.error(`Error upserting ${tableName} table:`, error);
+      throw new Error(error.message);
+    }
   }
 };
 

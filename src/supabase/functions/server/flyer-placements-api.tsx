@@ -1,8 +1,8 @@
 import { Context, Hono } from "npm:hono";
 import { API_URL_PREFIX } from "./constants.tsx";
 import { defineRoute } from "./route-wrapper.tsx";
-import { getStatementsForRoom, getVotesForStatement } from "./kv-utils.tsx";
-import { getFlyerPlacementsForRoom, insertFlyerPlacements } from "./model-utils.ts";
+import { getStatementsForRoom } from "./kv-utils.tsx";
+import { getFlyerPlacementsForRoom, insertFlyerPlacements, getVotesForStatement } from "./model-utils.ts";
 import {
   attachVoteCounts,
   findFlyerPlacementsError,

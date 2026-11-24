@@ -4,7 +4,6 @@ import { getActiveRooms } from "./debate-api.tsx";
 import {
   getAllRealUsers,
   getAllStatements,
-  getAllVotes,
   getAllSubHeards,
   getDebate,
   getUser,
@@ -26,7 +25,7 @@ import {
   uploadNewsletterImage,
 } from "./newsletter-builder-utils.ts";
 import { RouteError } from "./route-error.ts";
-import { getFlyerEmails } from "./model-utils.ts";
+import { getFlyerEmails, getAllVotes } from "./model-utils.ts";
 import { buildActiveDaysMap } from "./stats-utils.ts";
 import { performSubHeardRename } from "./subheard-rename-utils.tsx";
 import { getUserHistory } from "./user-history-utils.ts";

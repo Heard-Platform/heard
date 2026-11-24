@@ -2,9 +2,8 @@ import {
   getAllDebates,
   getStatementsForRoom,
   getStatementsForRoomIncludingHidden,
-  getVotesForStatement,
 } from "./kv-utils.tsx";
-import { getMergesForRoom } from "./model-utils.ts";
+import { getMergesForRoom, getVotesForStatement } from "./model-utils.ts";
 import {
   DebateRoom,
   Statement,

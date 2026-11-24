@@ -1,7 +1,4 @@
 import {
-  getVotesForUser,
-  saveVote,
-  deleteVote,
   findStatementInAnyRoom,
   saveStatement,
   getUser,
@@ -29,6 +26,9 @@ import {
   getAppFeedbackVotesForUser,
   saveAppFeedbackVote,
   deleteAppFeedbackVotesForUser,
+  getVotesForUser,
+  saveVote,
+  deleteVote,
 } from "./model-utils.ts";
 import type { Vote, Statement, AnonCreatableRecords } from "./types.tsx";
 import { reassignAnonymousVotes } from "./feedback-utils.ts";
@@ -48,8 +48,8 @@ const mergeVotes = async (anonymousUserId: string, targetUserId: string) => {
       userId: targetUserId,
       anonymousUserId: anonymousUserId,
     };
-    await saveVote(updatedAnonVote);
     await deleteVote(anonVote.statementId, anonymousUserId);
+    await saveVote(updatedAnonVote);
 
     const statement = await findStatementInAnyRoom(anonVote.statementId);
     if (!statement) {

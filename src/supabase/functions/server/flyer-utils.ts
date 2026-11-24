@@ -1,5 +1,6 @@
 import type { Statement, User, VoteType } from "./types.tsx";
-import { getStatement, getVote } from "./kv-utils.tsx";
+import { getStatement } from "./kv-utils.tsx";
+import { getVote } from "./model-utils.ts";
 import { processVote, type FlyerSource } from "./voting-utils.ts";
 import { isAgreeVote, isDisagreeVote } from "./vote-type-utils.ts";
 import { createAnonymousUser, createSession, getUserSession } from "./auth-api.tsx";

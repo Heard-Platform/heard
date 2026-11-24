@@ -6,7 +6,7 @@ import { normalizeCommunityName } from "./utils.tsx";
 import { getAllRecords, selectAll, selectAllWithoutLimit } from "./db-utils.ts";
 import { filterFeedEvents } from "./feed-utils.ts";
 import { getUserMemberships } from "./membership-utils.tsx";
-import { insertEvent } from "./model-utils.ts";
+import { insertEvent, getVotesForUser } from "./model-utils.ts";
 import {
   applyEventAction,
   getOrCreateEventDisplayKey,
@@ -29,7 +29,6 @@ import {
   getLiveEventState,
   getStatementsForRoom,
   getUser,
-  getVotesForUser,
   saveEventPresence,
   saveLiveEventState,
 } from "./kv-utils.tsx";

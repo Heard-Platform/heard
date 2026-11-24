@@ -1,4 +1,4 @@
-import { countRecords, createClientFromEnv, deleteRecord, insert, insertAndReturn, insertMany, selectAll, selectAllWithoutLimit, updateMany, upsert } from "./db-utils.ts";
+import { countRecords, createClientFromEnv, deleteRecord, insert, insertAndReturn, insertMany, selectAll, selectAllWithoutLimit, updateMany, upsert, upsertMany } from "./db-utils.ts";
 import { toTimestamp } from "./time-utils.ts";
 import {
   AppFeedbackVote,
@@ -27,7 +27,8 @@ import {
   StatementTagLink,
   UserEvent,
   UserPresence,
-  UserReport
+  UserReport,
+  Vote
   // @ts-ignore
 } from "./types.tsx";
 
@@ -486,6 +487,58 @@ export const getAllAppFeedbackVotes = async (): Promise<AppFeedbackVote[]> =>
 
 export const deleteAppFeedbackVotesForUser = async (userId: string) =>
   deleteRecord("app_feedback_votes", { userId });
+
+const VOTES_TABLE_NAME = "votes";
+
+export const getVote = async (
+  statementId: string,
+  userId: string,
+): Promise<Vote | null> => {
+  const [vote] = await selectAllWithoutLimit<Vote>(VOTES_TABLE_NAME, {
+    statementId,
+    userId,
+  });
+  return vote ?? null;
+};
+
+export const getVotesOfUserOnStatements = async (
+  userId: string,
+  statementIds: string[],
+): Promise<Vote[]> => {
+  if (statementIds.length === 0) return [];
+  return selectAllWithoutLimit<Vote>(
+    VOTES_TABLE_NAME,
+    { userId },
+    "id",
+    (query) => query.in("statementId", statementIds),
+  );
+};
+
+export const getAllVotes = async (): Promise<Vote[]> =>
+  selectAllWithoutLimit<Vote>(VOTES_TABLE_NAME);
+
+export const getVotesForUser = async (userId: string): Promise<Vote[]> =>
+  selectAllWithoutLimit<Vote>(VOTES_TABLE_NAME, { userId });
+
+export const getVotesForStatement = async (
+  statementId: string,
+): Promise<Vote[]> =>
+  selectAllWithoutLimit<Vote>(VOTES_TABLE_NAME, { statementId });
+
+export const saveVote = async (vote: Vote) => {
+  await bulkSaveVotes([vote]);
+};
+
+export const bulkSaveVotes = async (votes: Vote[]) =>
+  upsertMany(VOTES_TABLE_NAME, votes, "statementId,userId");
+
+export const deleteVote = async (statementId: string, userId: string) => {
+  const { error } = await deleteRecord(VOTES_TABLE_NAME, {
+    statementId,
+    userId,
+  });
+  if (error) throw new Error(error);
+};
 
 export const saveRoomFollow = async (userId: string, roomId: string) =>
   upsert(

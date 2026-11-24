@@ -8,15 +8,12 @@ import type {
 } from "./types.tsx";
 import {
   findStatementInAnyRoom,
-  getVote,
   saveStatement,
-  saveVote,
-  getVotesForStatement,
   saveUser,
 } from "./kv-utils.tsx";
 import { getUserSession } from "./auth-api.tsx";
 import { generateId, getDebateRoom, saveDebateRoom } from "./debate-api.tsx";
-import { recordRoomEngagement } from "./model-utils.ts";
+import { recordRoomEngagement, getVote, getVotesForStatement, saveVote } from "./model-utils.ts";
 import { ANONYMOUS_ACTION_NOT_ALLOWED_ERROR } from "./constants.tsx";
 import { maybeEmailResponseVotesNotif } from "./email-notifs-utils.ts";
 import { recomputeClustersIfNeeded } from "./cluster-freshness.ts";

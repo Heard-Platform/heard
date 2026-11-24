@@ -3,10 +3,9 @@ import {
   getClusterIdentityRecord,
   getDebate,
   getStatementsForRoom,
-  getVotesForStatement,
   saveClusterIdentityRecord,
 } from "./kv-utils.tsx";
-import { getInternalVar, setInternalVar } from "./model-utils.ts";
+import { getInternalVar, setInternalVar, getVotesForStatement } from "./model-utils.ts";
 import { createLlmClient } from "./llm-provider.ts";
 import { ClusterIdentity, ClusterNaming } from "./cluster-identity.ts";
 import {

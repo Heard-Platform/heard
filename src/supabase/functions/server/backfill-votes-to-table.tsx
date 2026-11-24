@@ -1,6 +1,6 @@
 // @ts-ignore
 import { Hono } from "npm:hono";
-import { getAllVotes } from "./kv-utils.tsx";
+import { getAllVotes } from "./model-utils.ts";
 import type { Vote } from "./types.tsx";
 import { upsert, selectAll } from "./db-utils.ts";
 import { defineRoute } from "./route-wrapper.tsx";

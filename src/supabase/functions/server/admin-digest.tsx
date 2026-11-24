@@ -1,13 +1,13 @@
 import {
   getAllRealUsers,
   getDevUsers,
-  getAllVotes,
   getAllStatements,
   getAllRealDebates,
   getAllSubHeards,
   getSentEmails,
   SCRAPER_AUTHOR_IDS,
 } from "./kv-utils.tsx";
+import { getAllVotes } from "./model-utils.ts";
 import { selectAll } from "./db-utils.ts";
 import { User, UserEvent, Community } from "./types.tsx";
 import { getFrontendUrl, getRoomUrl, escapeHtml, truncate } from "./utils.tsx";

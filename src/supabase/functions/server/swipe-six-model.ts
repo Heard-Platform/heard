@@ -6,8 +6,8 @@ import {
   getByPrefixParsed,
   getParsedKvData,
   getStatementsForRoom,
-  getVotesForUser,
 } from "./kv-utils.tsx";
+import { getVotesForUser } from "./model-utils.ts";
 import { isRoomEnded } from "./room-utils.ts";
 import {
   buildRoomSwipeSix,

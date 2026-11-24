@@ -4,14 +4,13 @@ import {
   getAllRealUsers,
   getAllRealDebates,
   getAllStatements,
-  getAllVotes,
   getAllAskTheDataRecords,
   getFeedbackList,
   SCRAPER_AUTHOR_IDS,
 } from "./kv-utils.tsx";
 import { getAllRecords, selectAll } from "./db-utils.ts";
 import type { Session, UserEvent } from "./types.tsx";
-import { getEventsOfType, getFlyerEmails, getUserReports, getAllRoomViews, getAllUserEventsSince, getAllAppFeedbackVotes, getUniqueUserIdsForEvent } from "./model-utils.ts";
+import { getEventsOfType, getFlyerEmails, getUserReports, getAllRoomViews, getAllUserEventsSince, getAllAppFeedbackVotes, getUniqueUserIdsForEvent, getAllVotes } from "./model-utils.ts";
 import { generateSparklineData, getDateString, calculateRetention, buildActiveDaysMap, medianSessionMinutesByWeek } from "./stats-utils.ts";
 import { buildCohortFunnelData } from "./cohort-utils.ts";
 import { buildWeeklySignups } from "./activity-utils.ts";

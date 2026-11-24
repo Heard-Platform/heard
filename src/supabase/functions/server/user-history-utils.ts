@@ -6,9 +6,8 @@ import {
   getSentEmails,
   getUserActivityRecords,
   getUserOrThrow,
-  getVotesForUser,
 } from "./kv-utils.tsx";
-import { getEventsForUser, getSentEmailsForUser } from "./model-utils.ts";
+import { getEventsForUser, getSentEmailsForUser, getVotesForUser } from "./model-utils.ts";
 import { sanitizeUser } from "./user-utils.ts";
 import { buildUserTimeline, type UserTimelineEvent } from "./user-timeline-utils.ts";
 import type { DebateRoom, Rant, Statement, UserActivityRecord, Vote } from "./types.tsx";
